@@ -1,0 +1,1250 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>꼬마 감자의 새싹 키우기 - 마름모의 넓이</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#3b2a1e; --soft:#6b5444; --card:#fffdf7; --orange:#e8843c; --orange-d:#c9611f;
+  --green:#5aa83a; --blue:#3a8dde; --red:#e05a4f; --shadow:0 12px 34px rgba(60,40,20,.28);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{color-scheme:light}
+html,body{margin:0;height:100%;word-break:keep-all;overflow:hidden;overscroll-behavior:none;font-family:"Gowun Dodum",system-ui,sans-serif;color:var(--ink)}
+button{font-family:inherit;cursor:pointer;color:inherit}
+.jua{font-family:"Jua","Gowun Dodum",sans-serif}
+#game{position:fixed;inset:0;overflow:hidden;background:linear-gradient(#64b9ec 0%,#a9dcf6 45%,#e5f6fb 70%,#7fbf52 70.1%);user-select:none;-webkit-user-select:none}
+#stage{position:absolute;left:0;top:0;height:600px;transform-origin:0 0}
+.layer{position:absolute;left:0;top:0;height:600px;will-change:transform}
+#skyL{width:100%}
+.sun{position:absolute;right:9%;top:46px;width:78px;height:78px;border-radius:50%;background:radial-gradient(#fffbe3,#ffe07a);box-shadow:0 0 70px 30px rgba(255,236,150,.55)}
+.cloud{position:absolute;width:120px;height:38px;background:#fff;border-radius:40px;opacity:.92;animation:drift 38s ease-in-out infinite alternate}
+.cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud::before{width:56px;height:56px;top:-28px;left:18px}
+.cloud::after{width:42px;height:42px;top:-18px;left:60px}
+@keyframes drift{to{transform:translateX(90px)}}
+
+/* ---------- 정류장(퀘스트 표지판) ---------- */
+.station{position:absolute;width:96px;height:150px;transform:translate(-50%,-100%);z-index:3}
+.station .post{position:absolute;left:43px;bottom:0;width:10px;height:72px;background:#8a5a33;border-radius:4px}
+.station .board{position:absolute;left:2px;bottom:56px;width:92px;height:56px;background:linear-gradient(#cf9254,#a96d39);border:3px solid #7d4e27;border-radius:10px;color:#fff4dd;text-align:center;font-family:Jua,sans-serif;font-size:13px;line-height:1.05;padding-top:4px;box-shadow:0 3px 0 rgba(0,0,0,.15)}
+.station .board b{display:block;font-size:21px;font-weight:normal}
+.station .bubble{position:absolute;left:24px;top:0;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(#fff8b8,#ffc93c);box-shadow:0 0 18px 6px rgba(255,214,80,.75);font-family:Jua,sans-serif;font-size:30px;color:#a0522d;animation:float 1.6s ease-in-out infinite}
+.station.done .bubble{background:radial-gradient(#e0f8cf,#78c955);box-shadow:0 0 12px 4px rgba(120,210,90,.6);color:#fff;font-size:26px}
+.station.pop .bubble{animation:burst .7s ease-out}
+@keyframes float{50%{transform:translateY(-8px)}}
+@keyframes burst{0%{transform:scale(1)}40%{transform:scale(1.6) rotate(12deg)}100%{transform:scale(1)}}
+
+/* ---------- 감자 캐릭터 ---------- */
+#sq{position:absolute;width:113px;height:150px;transform:translate(-50%,-100%);z-index:5}
+.sq-in{width:100%;height:100%}
+#sq svg,.hero svg{width:100%;height:100%;overflow:visible;display:block}
+.nametag{position:absolute;left:50%;top:-40px;transform:translateX(-50%);white-space:nowrap;background:#fff;border-radius:999px;padding:3px 11px;font-family:Jua,sans-serif;font-size:15px;color:#8a5a2b;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.nametag:empty{display:none}
+.sq-leg-f,.sq-leg-b{transform-box:fill-box;transform-origin:50% 10%}
+.sq-body{transform-box:view-box;transform-origin:60px 140px}
+.sq-arm-l{transform-box:fill-box;transform-origin:100% 0%}
+.sq-arm-r{transform-box:fill-box;transform-origin:0% 0%}
+.sq-eye{transform-box:fill-box;transform-origin:center;animation:blink 4.5s infinite}
+.walking .sq-body{animation:waddle .3s ease-in-out infinite alternate}
+.walking .sq-leg-f{animation:legA .3s ease-in-out infinite alternate}
+.walking .sq-leg-b{animation:legB .3s ease-in-out infinite alternate}
+.walking .sq-arm-l{animation:armA .3s ease-in-out infinite alternate}
+.walking .sq-arm-r{animation:armB .3s ease-in-out infinite alternate}
+.jump .sq-in{animation:jump .65s ease-out}
+@keyframes waddle{from{transform:rotate(-4deg)}to{transform:rotate(4deg) translateY(-3px)}}
+@keyframes legA{from{transform:rotate(-26deg)}to{transform:rotate(26deg)}}
+@keyframes legB{from{transform:rotate(26deg)}to{transform:rotate(-26deg)}}
+@keyframes armA{from{transform:rotate(14deg)}to{transform:rotate(-22deg)}}
+@keyframes armB{from{transform:rotate(-14deg)}to{transform:rotate(22deg)}}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes jump{0%,100%{transform:translateY(0)}40%{transform:translateY(-40px)}}
+.sp{display:none;transform-box:view-box;transform-origin:60px 48px}
+.sp.on{display:inline;animation:grow .9s cubic-bezier(.3,1.5,.5,1) both,sway 2.8s ease-in-out .9s infinite alternate}
+@keyframes grow{0%{transform:scale(.05)}100%{transform:scale(1)}}
+@keyframes sway{from{transform:rotate(-2.5deg)}to{transform:rotate(2.5deg)}}
+.dust{position:absolute;width:18px;height:10px;border-radius:50%;background:rgba(205,175,125,.75);z-index:4;animation:dust .75s ease-out forwards;pointer-events:none}
+@keyframes dust{to{transform:translate(-26px,-10px) scale(2.3);opacity:0}}
+
+/* ---------- 영양분 ---------- */
+.acorn-drop{position:absolute;width:44px;height:50px;z-index:7;transform:translate(-50%,-50%);animation:fall 1.15s cubic-bezier(.45,0,.75,1) forwards;filter:drop-shadow(0 0 8px rgba(255,255,255,.95))}
+.acorn-drop svg{width:100%;height:100%}
+@keyframes fall{0%{transform:translate(-50%,-480px) rotate(-200deg)}72%{transform:translate(-50%,-50%) rotate(0)}84%{transform:translate(-50%,-85%)}100%{transform:translate(-50%,-50%)}}
+.acorn-drop.collect{animation:collect .45s ease-in forwards}
+@keyframes collect{to{transform:translate(-50%,40px) scale(.2);opacity:0}}
+.plus1{position:absolute;z-index:8;font-family:Jua,sans-serif;font-size:30px;color:#fff;text-shadow:0 2px 0 #3f8f2c,0 0 10px rgba(0,0,0,.25);transform:translate(-50%,-50%);animation:up 1.1s ease-out forwards;pointer-events:none}
+@keyframes up{to{transform:translate(-50%,-80px);opacity:0}}
+.say{position:absolute;z-index:9;transform:translate(-50%,-100%);max-width:250px;text-align:center;background:#fff;border:3px solid #bfe3a6;border-radius:18px;padding:8px 14px;font-family:Jua,sans-serif;font-size:17px;line-height:1.35;color:#3b6b25;box-shadow:0 5px 14px rgba(0,0,0,.2);animation:sayIn 2.9s ease both;pointer-events:none}
+.say::after{content:"";position:absolute;left:50%;bottom:-10px;width:14px;height:14px;background:#fff;border-right:3px solid #bfe3a6;border-bottom:3px solid #bfe3a6;transform:translateX(-50%) rotate(45deg)}
+@keyframes sayIn{0%{opacity:0;transform:translate(-50%,-70%) scale(.6)}12%{opacity:1;transform:translate(-50%,-100%) scale(1)}85%{opacity:1}100%{opacity:0}}
+.spark{position:absolute;z-index:8;width:12px;height:12px;pointer-events:none;background:#ffe36a;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:spark .8s ease-out forwards}
+@keyframes spark{to{transform:translate(var(--dx),var(--dy)) scale(.3) rotate(120deg);opacity:0}}
+.tip{background:#eefaf0;border:2px solid #c7e8ce;border-radius:14px;padding:8px 12px;margin:8px 0;font-size:15px;color:#2f6a3b}
+.end-nut{display:flex;justify-content:center;gap:6px;margin:10px 0 2px}
+.end-nut span{width:34px;height:40px}.end-nut svg{width:100%;height:100%}
+.choices.pics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.choices.pics .choice{margin:0;flex-direction:column;align-items:center;gap:2px;padding:8px}
+.choices.pics .ctext{width:100%}
+.choices.pics svg{width:100%;height:auto;display:block}
+.t-card small{color:#8a7a6a}
+/* (예전 아기 다람쥐 스타일 — 지금은 사용 안 함) */
+.baby{position:absolute;width:84px;height:74px;transform:translate(-50%,-100%);z-index:6}
+.baby:not(.show){visibility:hidden}
+.baby .bin{width:100%;height:100%}
+.baby.show .bin{animation:babyIn 1s cubic-bezier(.3,1.3,.6,1) both,hop .45s ease-in-out 1s infinite alternate}
+.baby svg{transform:scaleX(-1)}
+@keyframes babyIn{0%{transform:translate(var(--fx),var(--fy)) scale(.25);opacity:0}15%{opacity:1}55%{transform:translate(calc(var(--fx) * .45),calc(var(--fy) - 70px)) scale(.85)}100%{transform:none}}
+@keyframes hop{to{transform:translateY(-12px)}}
+.heart{position:absolute;z-index:8;font-size:26px;animation:heart 2.2s ease-out forwards;pointer-events:none}
+@keyframes heart{0%{transform:translate(-50%,0) scale(.4);opacity:0}20%{opacity:1}100%{transform:translate(calc(-50% + var(--dx)),-150px) scale(1.2);opacity:0}}
+.confetti{position:fixed;top:-20px;width:10px;height:14px;z-index:60;pointer-events:none;animation:confetti linear forwards}
+@keyframes confetti{to{transform:translate(var(--dx),110vh) rotate(var(--r))}}
+
+/* ---------- HUD ---------- */
+#hud{position:fixed;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:flex-start;padding:10px 12px;z-index:10;pointer-events:none}
+#hud[hidden]{display:none}
+.hud-group{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{pointer-events:auto;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.92);border-radius:999px;padding:6px 14px;font-family:Jua,sans-serif;font-size:19px;box-shadow:0 4px 12px rgba(0,0,0,.15);border:none}
+.pill .ac{width:24px;height:28px}
+.pill .ac svg{width:100%;height:100%}
+.pill.bump{animation:bump .5s}
+@keyframes bump{40%{transform:scale(1.25)}}
+.steps{gap:5px;padding:8px 12px}
+.steps i{width:14px;height:14px;border-radius:50%;background:#e6dccd;display:block}
+.steps i.done{box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
+.steps i.now{background:#ffd34d;box-shadow:0 0 0 3px rgba(255,200,60,.45);animation:float 1s infinite}
+#muteBtn{padding:6px 11px}
+
+/* ---------- 오버레이 / 카드 ---------- */
+.overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:12px;background:rgba(45,30,18,.38);z-index:20}
+.overlay.show{display:flex}
+.btn{font-family:Jua,sans-serif;font-size:21px;padding:12px 28px;border:none;border-radius:999px;color:#fff;background:linear-gradient(#80d151,#4fa52f);box-shadow:0 5px 0 #3a7f22,0 8px 16px rgba(0,0,0,.15);transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #3a7f22}
+.btn:disabled{filter:grayscale(.7) opacity(.6);cursor:default}
+.btn.orange{background:linear-gradient(#ffaa5a,#e8843c);box-shadow:0 5px 0 #b45a1c,0 8px 16px rgba(0,0,0,.15)}
+.btn.small{font-size:16px;padding:8px 16px}
+.btn.gray{background:linear-gradient(#b8aa98,#8f806e);box-shadow:0 4px 0 #6d6052}
+
+.start-card{position:relative;width:min(470px,100%);max-height:calc(100dvh - 24px);overflow:auto;background:var(--card);border-radius:30px;padding:22px 24px 26px;text-align:center;box-shadow:var(--shadow);border:5px solid #f3d3a5;animation:pop .7s cubic-bezier(.3,1.5,.6,1)}
+.start-card .kicker{display:inline-block;background:#ffe6c7;color:var(--orange-d);border-radius:999px;padding:4px 14px;font-family:Jua,sans-serif;font-size:16px}
+.start-card h1{font-family:Jua,sans-serif;font-weight:normal;font-size:clamp(32px,8vw,42px);line-height:1.15;margin:10px 0 4px;color:var(--orange-d);text-shadow:0 3px 0 #ffe0b8}
+.hero{width:128px;height:171px;margin:0 auto}
+.start-card p{margin:6px 0 14px;color:var(--soft);line-height:1.5}
+.start-card label{display:block;font-family:Jua,sans-serif;font-size:18px;margin-bottom:6px}
+.start-card label small{font-family:"Gowun Dodum",sans-serif;font-size:13px;color:var(--soft)}
+#nameInput{width:100%;max-width:300px;font-size:22px;text-align:center;padding:10px;border:3px solid #edcfa5;border-radius:16px;font-family:Jua,sans-serif;outline:none;margin-bottom:14px;background:#fff;color:#111;caret-color:#111}
+#nameInput::placeholder{color:#9a8a7a}
+#nameInput:focus{border-color:var(--orange)}
+.err{color:var(--red);min-height:20px;margin-top:8px;font-size:15px}
+.teacher-btn{display:block;margin:14px auto 0;border:2px dashed #e0bf93;background:#fff7ec;border-radius:16px;padding:9px 16px;font-family:Jua,sans-serif;font-size:16px;color:var(--orange-d);cursor:pointer}
+.teacher-btn small{font-family:"Gowun Dodum",sans-serif;font-size:12px;color:var(--soft)}
+.teacher-btn:hover{background:#ffeed8}
+
+.qcard{width:min(590px,100%);max-height:calc(100dvh - 24px);display:flex;flex-direction:column;background:var(--card);border-radius:26px;border:4px solid #f3d3a5;box-shadow:var(--shadow);overflow:hidden}
+.qcard.pop{animation:pop .75s cubic-bezier(.3,1.45,.55,1)}
+.qcard.flip{animation:flip .55s ease}
+.qcard.shake{animation:shake .45s}
+@keyframes pop{0%{transform:scale(.25) rotate(-8deg);opacity:0}60%{transform:scale(1.05) rotate(1deg);opacity:1}100%{transform:none}}
+@keyframes flip{0%{transform:rotateY(0)}50%{transform:rotateY(90deg)}100%{transform:rotateY(0)}}
+@keyframes shake{20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+#questOverlay.result{background:rgba(45,30,18,.06);align-items:flex-start}
+#questOverlay.result .qcard{max-height:min(64dvh,calc(100dvh - 24px))}
+.qhead{display:flex;align-items:center;gap:10px;padding:11px 16px;background:linear-gradient(#ffb76a,#f0954a);color:#fff}
+.qhead.good{background:linear-gradient(#8ad65e,#58ac38)}
+.qhead.calm{background:linear-gradient(#7fbcf0,#4e95d6)}
+.qbadge{font-family:Jua,sans-serif;background:rgba(255,255,255,.28);border-radius:999px;padding:3px 11px;font-size:16px;white-space:nowrap}
+.qtitle{font-family:Jua,sans-serif;font-size:21px;flex:1;text-shadow:0 2px 0 rgba(0,0,0,.12)}
+.chances{display:flex;align-items:center;gap:4px;font-size:12px;white-space:nowrap}
+.chances i{width:13px;height:13px;border-radius:50%;background:rgba(255,255,255,.35);display:block}
+.chances i.on{background:#fff6c9;box-shadow:0 0 0 2px rgba(255,255,255,.5)}
+.qbody{padding:16px 18px 10px;overflow:auto;font-size:17px;line-height:1.55}
+.qtext small{display:block;color:var(--soft);font-size:14px;margin-top:2px}
+.qfoot{display:flex;gap:10px;justify-content:center;padding:12px 18px 16px;border-top:2px dashed #f0dcc0}
+.notice{background:#e8f4ff;color:#1f5f99;border-radius:12px;padding:8px 12px;margin-bottom:10px;font-size:15px}
+.formula{background:#fff2dc;border-radius:14px;padding:10px 14px;margin:10px 0;text-align:center;font-family:Jua,sans-serif;font-size:19px;line-height:1.4}
+.formula b{color:var(--orange-d);font-weight:normal;font-size:23px}
+.fig{display:flex;justify-content:center;margin:8px 0}
+.fig svg{width:100%;max-width:400px;height:auto}
+.fig.sm svg{max-width:270px}
+.hint .fig{margin:6px 0 0}
+.hint.flash{animation:hflash 1.4s ease}
+@keyframes hflash{0%,40%{background:#ffe27a;transform:scale(1.02)}100%{background:#fff9d4;transform:none}}
+.solution .fig{margin:6px 0}
+.solution p{line-height:1.6}
+.t-card .wr{font-size:12.5px;line-height:1.5}
+.choices{margin-top:8px}
+.choice{display:flex;gap:8px;align-items:flex-start;width:100%;text-align:left;padding:11px 13px;margin:8px 0;border:3px solid #eedcc2;border-radius:16px;background:#fff;font-size:16px;line-height:1.4;transition:transform .1s}
+.choice:active{transform:scale(.98)}
+.choice .cnum{font-family:Jua,sans-serif;color:var(--orange-d)}
+.choice.sel{border-color:var(--blue);background:#eaf4ff}
+.choice.bad{border-color:#f2a49c;background:#fff0ee}
+.ans{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px}
+#ansInput{width:150px;font-size:28px;text-align:center;padding:8px;border:3px solid #e9cfa7;border-radius:16px;font-family:Jua,sans-serif;outline:none;background:#fff}
+#ansInput:focus{border-color:var(--orange)}
+.unit{font-family:Jua,sans-serif;font-size:24px}
+.hint{display:none;background:#fff9d4;border:2px solid #f3d75e;border-radius:14px;padding:10px 12px;margin-top:12px;font-size:15.5px}
+.hint.show{display:block;animation:slide .5s ease}
+@keyframes slide{from{opacity:0;transform:translateY(-6px)}}
+.feedback{min-height:24px;text-align:center;margin-top:10px;font-weight:bold;font-size:15.5px}
+.feedback.bad{color:var(--red)}
+.feedback.info{color:#1f5f99}
+.solution{background:#f1fbe8;border:2px solid #b8e19a;border-radius:16px;padding:10px 14px;margin-top:8px}
+.solution h3{margin:0 0 4px;font-family:Jua,sans-serif;font-weight:normal;font-size:19px;color:#3f8a24}
+.solution p{margin:6px 0}
+.praise{font-family:Jua,sans-serif;font-size:22px;text-align:center;margin:2px 0 6px;color:var(--orange-d)}
+
+.pad-tools{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:10px 0 8px}
+.tool{border:2px solid #e9cfa7;background:#fff;border-radius:999px;padding:6px 12px;font-size:14px}
+.tool.on{background:var(--orange);border-color:var(--orange);color:#fff}
+.pad-wrap{display:flex;justify-content:center}
+.pad canvas{touch-action:none;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.12);background:#fff}
+.pad-tip{text-align:center;font-size:13.5px;color:var(--soft);margin-top:6px}
+
+.end-card{width:min(460px,100%);background:var(--card);border-radius:28px;border:5px solid #f3d3a5;box-shadow:var(--shadow);padding:20px 22px 24px;text-align:center;animation:pop .8s cubic-bezier(.3,1.45,.55,1);margin-top:4px}
+.end-card h2{font-family:Jua,sans-serif;font-weight:normal;font-size:30px;margin:4px 0;color:var(--orange-d)}
+.end-stats{display:flex;justify-content:center;gap:12px;margin:14px 0}
+.end-stats div{background:#fff2dc;border-radius:16px;padding:10px 16px;min-width:110px}
+.end-stats b{display:block;font-family:Jua,sans-serif;font-weight:normal;font-size:24px}
+.end-stats span{font-size:13px;color:var(--soft)}
+.end-note{font-size:14px;color:var(--soft);margin-bottom:14px}
+#endOverlay{background:rgba(45,30,18,.08);align-items:flex-start}
+
+.t-card{width:min(900px,100%);max-height:calc(100dvh - 24px);overflow:auto;background:#fff;border-radius:20px;padding:18px;box-shadow:var(--shadow)}
+.t-card h2{font-family:Jua,sans-serif;font-weight:normal;margin:0 0 6px}
+.t-card .row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.t-card table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:8px}
+.t-card th,.t-card td{border-bottom:1px solid #eee;padding:6px;text-align:left;vertical-align:top}
+.t-card th{background:#fff4e4;position:sticky;top:0}
+.t-card .o{color:#3f8a24;font-weight:bold}.t-card .x{color:var(--red);font-weight:bold}
+.t-note{font-size:13.5px;color:var(--soft);background:#f7f3ec;border-radius:10px;padding:8px 10px}
+#pinInput{font-size:20px;padding:8px 12px;border:2px solid #ddd;border-radius:10px;width:140px;text-align:center}
+@media (max-width:520px){
+  .qtitle{font-size:18px}.qbody{font-size:16px;padding:14px 14px 8px}.chances span{display:none}
+  .pill{font-size:16px;padding:5px 11px}.steps i{width:11px;height:11px}
+}
+
+.pbar{display:flex;gap:3px;margin-bottom:2px}.pbar i{width:20px;height:12px;border-radius:4px;background:#e8e2d3;display:block}
+.pbar i.d{background:#6cc04a}.pbar i.c{background:#ffb84d;animation:pb 1s infinite alternate}.pbar i.w{box-shadow:inset 0 -4px 0 #e5533d}
+@keyframes pb{to{opacity:.45}}
+tr.stale td{opacity:.55}tr.done td{background:#f1fbe9}tr.detail td{background:#fff8ec;text-align:left}
+.chip{display:inline-block;background:#fff2dc;border-radius:99px;padding:5px 12px;font-weight:700;font-size:13px}
+#tSort{padding:6px;border-radius:8px;border:2px solid #e3d3b0;font-family:inherit}
+</style>
+</head>
+<body>
+<div id="game">
+  <div id="stage">
+    <div class="layer" id="skyL">
+      <div class="sun"></div>
+      <div class="cloud" style="left:6%;top:70px"></div>
+      <div class="cloud" style="left:38%;top:40px;transform:scale(.8);animation-duration:46s"></div>
+      <div class="cloud" style="left:64%;top:110px;animation-duration:52s"></div>
+    </div>
+    <div class="layer" id="farL"></div>
+    <div class="layer" id="midL"></div>
+    <div class="layer" id="groundL"></div>
+  </div>
+</div>
+
+<div id="hud" hidden>
+  <div class="hud-group">
+    <div class="pill" id="acPill"><span class="ac" id="hudAcorn"></span><span id="acCount">0</span>/5</div>
+    <div class="pill steps" id="steps"></div>
+  </div>
+  <div class="hud-group">
+    <div class="pill" id="hudName"></div>
+    <button class="pill" id="muteBtn" aria-label="소리 켜기/끄기">🔊</button>
+  </div>
+</div>
+
+<!-- 시작 화면 -->
+<div class="overlay show" id="startOverlay">
+  <div class="start-card">
+    <span class="kicker">5학년 수학 · 마름모의 넓이</span>
+    <h1>꼬마 감자의<br>새싹 키우기</h1>
+    <div class="hero" id="hero"></div>
+    <p>숲길의 <b>퀘스트 5개</b>를 풀고 <b>물·햇빛·거름…</b> 영양분을 받으면<br>감자 머리에서 <b>새싹이 쑥쑥</b> 자라 마지막에 <b>꽃이 활짝</b> 펴요!</p>
+    <label for="nameInput">감자의 이름 <small>(내 이름을 적어 주세요)</small></label>
+    <input id="nameInput" maxlength="12" placeholder="예) 김하늘" autocomplete="off">
+    <br><button class="btn orange" id="startBtn">모험 시작!</button>
+    <div class="err" id="nameErr"></div>
+    <button class="teacher-btn" id="teacherLink">👩‍🏫 선생님 화면 <small>(실시간 진행 보기 · 비밀번호)</small></button>
+  </div>
+</div>
+
+<!-- 퀘스트 카드 -->
+<div class="overlay" id="questOverlay"><div class="qcard" id="qcard"></div></div>
+
+<!-- 엔딩 -->
+<div class="overlay" id="endOverlay"><div class="end-card" id="endCard"></div></div>
+
+<!-- 선생님 기록 -->
+<div class="overlay" id="teacherOverlay" style="z-index:30"><div class="t-card" id="tCard"></div></div>
+
+<script src="config.js"></script>
+<script>
+/* =====================================================================
+   ★ 설정 ★  (배포 전에 여기만 바꾸면 돼요 — README.md 참고)
+   ===================================================================== */
+const CONFIG = {
+  // 구글 Apps Script 웹 앱 주소 (https://script.google.com/macros/s/..../exec)
+  // 비워 두면 기록은 학생이 사용한 기기에만 저장돼요.
+  SHEET_URL: (window.GAME_SERVER_URL || ""),   // config.js 에서 읽어요
+  // 선생님이 기록을 볼 구글 시트 주소 (선택, 선생님 화면에 버튼으로 나와요)
+  SHEET_VIEW_URL: "",
+  TEACHER_PIN: "",   // (서버 연결 시 사용 안 함 — 진짜 비밀번호는 Apps Script 서버에만 있어요)
+  PING_MS: 60000,   // 학생 화면이 '살아 있어요' 신호를 보내는 간격(밀리초)
+  POLL_MS: 5000,    // 선생님 화면이 새로고침하는 간격(밀리초)
+  RETRIES: 1,            // 틀리면 힌트를 보여 주고 다시 풀 수 있는 횟수
+  WALK_SPEED: 140        // 감자 걷는 속도 (클수록 빠름)
+};
+
+/* =====================================================================
+   ★ 문제 · 힌트 · 풀이 ★
+   - versions[0] 이 처음 나오는 문제, 나머지는 "숫자를 바꾼 비슷한 문제"예요.
+   - q(문제), hint(힌트), solution(풀이)는 글자를 바로 고쳐도 되고,
+     v.숫자 를 써서 버전마다 숫자가 자동으로 바뀌게 해도 돼요.
+   ===================================================================== */
+const F = (svg, c = "") => `<div class="fig ${c}">${svg}</div>`;
+const QUESTS = [
+  { // ---------------- 퀘스트 1 ----------------
+    title: "마름모 넓이 공식", type: "choice",
+    versions: [
+      { q: "마름모의 넓이를 구하는 공식은 무엇일까요?",
+        choices: ["(한 대각선의 길이) × (다른 대각선의 길이) ÷ 2",
+                  "(한 변의 길이) × (한 변의 길이)",
+                  "(한 대각선의 길이) × (다른 대각선의 길이)",
+                  "(한 변의 길이) × 4"], answer: 0 },
+      { q: "□ 안에 알맞은 수는 무엇일까요?<div class='formula'>(마름모의 넓이) = (한 대각선의 길이) × (다른 대각선의 길이) ÷ □</div>",
+        choices: ["1", "2", "3", "4"], answer: 1 },
+      { q: "마름모의 넓이를 구하려면 어떤 길이를 알아야 할까요?",
+        choices: ["두 대각선의 길이", "한 변의 길이만", "네 변의 길이", "둘레의 길이"], answer: 0 }
+    ],
+    fig: () => figRhombus(8, 6, { noNums: true }),
+    hint: () => `마름모를 꼭 맞게 둘러싸는 <b>직사각형</b>을 떠올려 봐요. 직사각형의 가로와 세로는 마름모의 <b>두 대각선</b>과 길이가 같아요. 그리고 마름모의 넓이는 이 직사각형 넓이의 <b>절반</b>이에요!${F(figRectRhombus(8, 6, { noNums: true, diag: true }), "sm")}`,
+    solution: () => `<p><b>① 마름모를 직사각형 안에 딱 맞게 넣어 봐요.</b> 마름모의 네 꼭짓점이 직사각형 네 변의 한가운데에 닿아요.</p>
+      ${F(figRectRhombus(8, 6, { noNums: true, diag: true, outer: true }))}
+      <p><b>② 직사각형의 가로와 세로는 마름모의 두 대각선과 길이가 같아요.</b> 파란 선(가로)과 초록 선(세로)이 마름모의 두 대각선이에요.</p>
+      <p><b>③ 마름모의 넓이는 이 직사각형의 넓이의 딱 절반이에요.</b> 직사각형 안에서 마름모 바깥에 있는 <b style="color:#2f78c4">하늘색 삼각형 4개</b>는 마름모 안쪽의 삼각형 4개와 크기가 똑같아요. 그래서 마름모는 직사각형의 딱 절반이에요.</p>
+      <p><b>④ 식으로 써 봐요.</b></p>
+      <div class="formula">(직사각형의 넓이) = (가로) × (세로) = (한 대각선) × (다른 대각선)<br>(마름모의 넓이) = (직사각형의 넓이) ÷ 2<br><b>= (한 대각선) × (다른 대각선) ÷ 2</b></div>`
+  },
+  { // ---------------- 퀘스트 2 ----------------
+    title: "대각선을 찾아라!", type: "number", unit: "cm²",
+    versions: [ { a: 8, b: 6, s: 5 }, { a: 16, b: 12, s: 10 }, { a: 24, b: 10, s: 13 }, { a: 24, b: 18, s: 15 } ],
+    q: () => "그림과 같은 마름모가 있어요. 이 마름모의 넓이는 몇 cm²일까요?<small>점선은 길이를 나타내요. 어느 선의 길이인지 잘 살펴보세요.</small>",
+    brief: v => `대각선 ${v.a}cm와 ${v.b}cm, 변 ${v.s}cm인 마름모`,
+    fig: v => figRhombus(v.a, v.b, { side: v.s }),
+    answer: v => v.a * v.b / 2,
+    hint: v => `변의 길이(${v.s} cm)는 넓이를 구할 때 쓰지 않아요!`,
+    solution: v => `<p><b>① 마름모의 넓이 공식을 떠올려요.</b></p>
+      <div class="formula">(마름모의 넓이) = (한 대각선) × (다른 대각선) ÷ 2</div>
+      <p><b>② 그림에서 두 대각선을 찾아요.</b> 마름모 안에서 서로 직각으로 만나는 두 선이 대각선이에요. 가로 대각선은 <b style="color:#1f6fd1">${v.a} cm</b>, 세로 대각선은 <b style="color:#1c9441">${v.b} cm</b>예요.</p>
+      ${F(figRhombus(v.a, v.b, { side: v.s }))}
+      <p><b>③ 변의 길이 ${v.s} cm는 쓰지 않아요.</b> 마름모의 넓이는 두 대각선의 길이만 있으면 구할 수 있어요. 변의 길이는 헷갈리라고 일부러 넣은 숫자예요!</p>
+      <p><b>④ 공식에 넣어서 계산해요.</b></p>
+      <div class="formula">${v.a} × ${v.b} ÷ 2 = ${v.a * v.b} ÷ 2 = <b>${v.a * v.b / 2}</b> (cm²)</div>`
+  },
+  { // ---------------- 퀘스트 3 (모눈종이 객관식) ----------------
+    title: "모눈종이 속 마름모", type: "choice", pics: true,
+    versions: [ { d: 4, area: 14 }, { d: 6, area: 12 }, { d: 4, area: 10 }, { d: 6, area: 15 } ],
+    q: v => `한 대각선의 길이가 <b>${v.d} cm</b>이고, 넓이가 <b>${v.area} cm²</b>인 마름모를 바르게 그린 것은 어느 것일까요?<small>모눈 한 칸의 길이는 1 cm예요. 칸 수를 세어 보세요!</small>`,
+    brief: v => `한 대각선 ${v.d}cm, 넓이 ${v.area}cm²인 마름모 고르기`,
+    choices: v => { const o = v.area * 2 / v.d; return [o, ...gridDistractors(v)].map(h => ({ html: figGrid(h, v.d), text: `가로 대각선 ${h}cm, 세로 대각선 ${v.d}cm인 마름모` })); },
+    answer: 0,
+    hint: v => { const x = gridDistractors(v)[0]; return `보기를 하나씩 <b>직접 계산</b>해 봐요. 모든 보기에서 <b style="color:#1c9441">초록 대각선</b>은 ${v.d}칸이에요. <b style="color:#1f6fd1">파란 대각선</b>이 ${x}칸이라면 넓이는 ${v.d} × ${x} ÷ 2 = ${v.d * x / 2} cm²예요. 넓이가 <b>${v.area} cm²</b>가 되는 보기를 찾아보세요!`; },
+    solution: v => { const o = v.area * 2 / v.d; return `<p><b>① 마름모의 넓이 공식을 떠올려요.</b></p>
+      <div class="formula">(한 대각선) × (다른 대각선) ÷ 2 = (넓이)</div>
+      <p><b>② ÷ 2를 하기 전의 수를 먼저 알아봐요.</b> 어떤 수를 2로 나눴더니 ${v.area}가 됐다면 그 수는 ${v.area} × 2 = <b>${v.area * 2}</b>예요. 그러니까 두 대각선을 곱한 값은 ${v.area * 2}여야 해요.</p>
+      <p><b>③ 모르는 대각선을 구해요.</b> 한 대각선이 ${v.d} cm이니까 모르는 대각선을 □라고 하면</p>
+      <div class="formula">${v.d} × □ = ${v.area * 2}<br>□ = ${v.area * 2} ÷ ${v.d} = <b>${o}</b> (cm)</div>
+      <p><b>④ 맞는지 확인해 봐요.</b> ${v.d} × ${o} ÷ 2 = ${v.d * o} ÷ 2 = ${v.area} ✔ 넓이가 ${v.area} cm²가 돼요!</p>
+      <p><b>⑤ 그림에서 찾아요.</b> 두 대각선이 <b>${v.d}칸</b>과 <b>${o}칸</b>인 마름모가 정답이에요. (파란 선 ${o}칸, 초록 선 ${v.d}칸)</p>
+      ${F(figRhombusGrid(o, v.d))}`; }
+  },
+  { // ---------------- 퀘스트 4 ----------------
+    title: "직사각형 속 마름모", type: "number", unit: "cm²",
+    versions: [ { w: 12, h: 8 }, { w: 10, h: 6 }, { w: 14, h: 8 }, { w: 16, h: 10 } ],
+    q: () => "직사각형의 네 변의 <b>한가운데 점</b>을 이어서 마름모를 그렸어요. 색칠한 마름모의 넓이는 몇 cm²일까요?<small>점선은 직사각형의 가로와 세로 길이를 나타내요.</small>",
+    brief: v => `가로 ${v.w}cm, 세로 ${v.h}cm인 직사각형 안의 마름모`,
+    fig: v => figRectRhombus(v.w, v.h),
+    answer: v => v.w * v.h / 2,
+    hint: v => `마름모 안에 두 <b>대각선</b>을 그어 봤어요. <b style="color:#1f6fd1">파란 선</b>은 직사각형의 <b>가로</b>와, <b style="color:#1c9441">초록 선</b>은 <b>세로</b>와 길이가 같아요. 두 길이를 마름모 넓이 공식 <b>(한 대각선) × (다른 대각선) ÷ 2</b>에 넣어 보세요!${F(figRectRhombus(v.w, v.h, { diag: true }), "sm")}`,
+    solution: v => `<p><b>① 마름모 안에 두 대각선을 그어 봐요.</b> 마름모의 꼭짓점은 직사각형 각 변의 한가운데예요.</p>
+      ${F(figRectRhombus(v.w, v.h, { diag: true }))}
+      <p><b>② 대각선의 길이를 알아봐요.</b></p>
+      <p>• <b style="color:#1f6fd1">파란 대각선</b>은 왼쪽 변의 한가운데에서 오른쪽 변의 한가운데까지예요. 직사각형의 <b>가로</b>와 길이가 같아서 <b>${v.w} cm</b>예요.</p>
+      <p>• <b style="color:#1c9441">초록 대각선</b>은 위쪽 변의 한가운데에서 아래쪽 변의 한가운데까지예요. 직사각형의 <b>세로</b>와 길이가 같아서 <b>${v.h} cm</b>예요.</p>
+      <p><b>③ 마름모의 넓이 공식에 넣어요.</b></p>
+      <div class="formula">${v.w} × ${v.h} ÷ 2 = ${v.w * v.h} ÷ 2 = <b>${v.w * v.h / 2}</b> (cm²)</div>
+      <p><b>④ 직사각형의 넓이가 왜 마름모의 2배일까요?</b> 직사각형의 넓이는 ${v.w} × ${v.h} = ${v.w * v.h} cm²예요. 두 대각선을 그으면 직사각형이 작은 직사각형 4개로 나뉘어요. 마름모의 변이 작은 직사각형을 대각선으로 반으로 잘라 주니까, <b>마름모 안쪽 삼각형(주황색)과 바깥쪽 삼각형(하늘색)이 똑같은 크기</b>가 돼요. 그래서 마름모는 직사각형의 딱 절반이고, 거꾸로 <b>직사각형의 넓이는 마름모의 2배</b>예요. (${v.w * v.h / 2} × 2 = ${v.w * v.h})</p>
+      ${F(figRectRhombus(v.w, v.h, { diag: true, outer: true, noNums: true }), "sm")}`
+  },
+  { // ---------------- 퀘스트 5 ----------------
+    title: "넓이가 같은 두 마름모", type: "number", unit: "cm",
+    versions: [ { a: 8, b: 9, c: 12 }, { a: 6, b: 10, c: 4 }, { a: 10, b: 12, c: 8 }, { a: 12, b: 6, c: 9 } ],
+    q: () => "마름모 ㉮와 ㉯는 <b>넓이가 같아요</b>. ㉯의 다른 대각선(<b style='color:#d0392f'>?</b>)의 길이는 몇 cm일까요?",
+    brief: v => `㉮ 대각선 ${v.a}cm·${v.b}cm, ㉯ 한 대각선 ${v.c}cm (두 마름모의 넓이가 같음)`,
+    fig: v => figTwoRhombus(v.a, v.b, v.c, v.a * v.b / v.c),
+    answer: v => v.a * v.b / v.c,
+    hint: v => `① 먼저 ㉮의 넓이를 구해 봐요. (${v.a} × ${v.b} ÷ 2)<br>② ㉯의 넓이도 똑같으니까 <b>${v.c} × □ ÷ 2 = (㉮의 넓이)</b>라는 식이 만들어져요. 이 식에서 □를 찾으면 돼요!<br>(÷ 2를 되돌리려면 × 2를 해 봐요.)`,
+    solution: v => { const S2 = v.a * v.b / 2, x = v.a * v.b / v.c; return `<p><b>① ㉮의 넓이를 먼저 구해요.</b></p>
+      <div class="formula">${v.a} × ${v.b} ÷ 2 = ${v.a * v.b} ÷ 2 = <b>${S2}</b> (cm²)</div>
+      <p><b>② ㉯의 넓이도 ${S2} cm²예요.</b> (두 마름모의 넓이가 같으니까요!) ㉯의 공식에 모르는 대각선을 □라고 넣으면</p>
+      <div class="formula">${v.c} × □ ÷ 2 = ${S2}</div>
+      <p><b>③ □를 구해요.</b> ÷ 2를 먼저 되돌려요. 어떤 수를 2로 나눠서 ${S2}가 됐다면 그 수는 ${S2} × 2 = ${S2 * 2}예요. 그러니까</p>
+      <div class="formula">${v.c} × □ = ${S2 * 2}<br>□ = ${S2 * 2} ÷ ${v.c} = <b>${x}</b> (cm)</div>
+      <p><b>④ 맞는지 확인해 봐요.</b> ${v.c} × ${x} ÷ 2 = ${v.c * x} ÷ 2 = ${S2} ✔ ㉮와 넓이가 같아요!</p>`; }
+  }
+];
+
+/* =====================================================================
+   그림(SVG) 만들기  — 길이는 색깔 점선(치수선)으로 표시해요
+   ===================================================================== */
+const C_H = "#1f6fd1", C_V = "#1c9441", C_S = "#e2641f", C_RECT = "#5b4636", C_Q = "#d0392f", C_LINE = "#8a6a52";
+function tw(t) { let w = 0; for (const ch of String(t)) w += /[가-힣㉮㉯□]/.test(ch) ? 19 : ch === " " ? 6 : 11; return w; }
+function pill(x, y, t, color, anchor = "middle") {
+  const w = tw(t) + 20, h = 30, x0 = anchor === "start" ? x : anchor === "end" ? x - w : x - w / 2;
+  return `<g><rect x="${x0}" y="${y - h / 2}" width="${w}" height="${h}" rx="15" fill="#fff" stroke="${color}" stroke-width="2.5"/><text x="${x0 + w / 2}" y="${y + 7}" text-anchor="middle" font-family="Jua,sans-serif" font-size="19" fill="${color}">${t}</text></g>`;
+}
+const rightMark = (cx, cy) => `<path d="M${cx + 12} ${cy} L${cx + 12} ${cy - 12} L${cx} ${cy - 12}" fill="none" stroke="#3b2a1e" stroke-width="2"/>`;
+// 치수선: (x1,y1)~(x2,y2) 길이를 바깥쪽(법선 nx,ny 방향)으로 off만큼 띄워 점선으로 표시
+function dim(x1, y1, x2, y2, nx, ny, off, color, label) {
+  const ax = x1 + nx * off, ay = y1 + ny * off, bx = x2 + nx * off, by = y2 + ny * off;
+  const ext = (px, py, qx, qy) => `<line x1="${px + nx * 4}" y1="${py + ny * 4}" x2="${qx + nx * 8}" y2="${qy + ny * 8}" stroke="${color}" stroke-width="1.8" stroke-dasharray="2 4" stroke-linecap="round" opacity=".85"/>`;
+  let s = ext(x1, y1, ax, ay) + ext(x2, y2, bx, by);
+  s += `<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="${color}" stroke-width="3.2" stroke-dasharray="8 5" stroke-linecap="round"/>`;
+  for (const [px, py] of [[ax, ay], [bx, by]]) s += `<line x1="${px - nx * 8}" y1="${py - ny * 8}" x2="${px + nx * 8}" y2="${py + ny * 8}" stroke="${color}" stroke-width="3.2" stroke-linecap="round"/>`;
+  return s + pill((ax + bx) / 2, (ay + by) / 2, label, color);
+}
+function figRhombus(a, b, o = {}) {
+  if (o.grid) return figRhombusGrid(a, b);
+  const la = o.la ?? `${a} cm`, lb = o.lb ?? `${b} cm`, cx = 220, cy = 118;
+  const pw = o.noNums ? 0 : tw(lb) + 20, maxHw = Math.min(105, cx - 12 - pw);
+  const k = Math.min(2 * maxHw / a, 128 / b), hw = a * k / 2, hh = b * k / 2;
+  const T = [cx, cy - hh], R = [cx + hw, cy], B = [cx, cy + hh], L = [cx - hw, cy];
+  let s = `<svg viewBox="0 0 440 250" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="${L[0]},${L[1]} ${T[0]},${T[1]} ${R[0]},${R[1]} ${B[0]},${B[1]}" fill="#fff0de" stroke="${C_LINE}" stroke-width="3.5" stroke-linejoin="round"/>
+    <line x1="${L[0]}" y1="${cy}" x2="${R[0]}" y2="${cy}" stroke="${C_H}" stroke-width="3"/>
+    <line x1="${cx}" y1="${T[1]}" x2="${cx}" y2="${B[1]}" stroke="${C_V}" stroke-width="3"/>
+    ${rightMark(cx, cy)}`;
+  if (!o.noNums) {
+    s += dim(L[0], L[1], R[0], R[1], 0, 1, hh + 28, C_H, la);
+    s += dim(T[0], T[1], B[0], B[1], -1, 0, hw + 8 + pw / 2, C_V, lb);
+    if (o.side) {
+      const dx = R[0] - T[0], dy = R[1] - T[1], len = Math.hypot(dx, dy);
+      s += dim(T[0], T[1], R[0], R[1], dy / len, -dx / len, 24, C_S, `${o.side} cm`);
+    }
+  }
+  return s + "</svg>";
+}
+// 모눈 위에 그린 마름모 (풀이용): 모눈과 함께 보이도록 숫자는 안쪽에
+function figRhombusGrid(a, b) {
+  const cx = 160, cy = 112, k = Math.min(230 / (a + 2), 180 / (b + 2)), hw = a * k / 2, hh = b * k / 2;
+  let g = "";
+  for (let i = -1; i <= a + 1; i++) { const x = cx - hw + i * k; g += `<line x1="${x}" y1="${cy - hh - k}" x2="${x}" y2="${cy + hh + k}" stroke="#d3e7f5" stroke-width="1"/>`; }
+  for (let j = -1; j <= b + 1; j++) { const y = cy - hh + j * k; g += `<line x1="${cx - hw - k}" y1="${y}" x2="${cx + hw + k}" y2="${y}" stroke="#d3e7f5" stroke-width="1"/>`; }
+  return `<svg viewBox="0 0 320 224" xmlns="http://www.w3.org/2000/svg">${g}
+    <polygon points="${cx - hw},${cy} ${cx},${cy - hh} ${cx + hw},${cy} ${cx},${cy + hh}" fill="rgba(255,200,150,.45)" stroke="${C_LINE}" stroke-width="3.5" stroke-linejoin="round"/>
+    <line x1="${cx - hw}" y1="${cy}" x2="${cx + hw}" y2="${cy}" stroke="${C_H}" stroke-width="3.5"/>
+    <line x1="${cx}" y1="${cy - hh}" x2="${cx}" y2="${cy + hh}" stroke="${C_V}" stroke-width="3.5"/>
+    ${rightMark(cx, cy)}${pill(cx - hw / 2, cy - 22, `${a}칸 = ${a} cm`, C_H)}${pill(cx - 12, cy + hh / 2, `${b}칸 = ${b} cm`, C_V, "end")}</svg>`;
+}
+function figRectRhombus(w, h, o = {}) {
+  const cx = 190, cy = 100, k = Math.min(210 / w, 130 / h), W = w * k, H = h * k, x0 = cx - W / 2, y0 = cy - H / 2;
+  let s = `<svg viewBox="0 0 380 250" xmlns="http://www.w3.org/2000/svg">
+    <rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="${o.outer ? "#d6e8f8" : "#fff"}" stroke="${C_RECT}" stroke-width="3.5"/>
+    <polygon points="${cx},${y0} ${x0 + W},${cy} ${cx},${y0 + H} ${x0},${cy}" fill="#ffcf9e" stroke="${C_S}" stroke-width="3.5" stroke-linejoin="round"/>`;
+  if (o.diag) s += `<line x1="${x0}" y1="${cy}" x2="${x0 + W}" y2="${cy}" stroke="${C_H}" stroke-width="3.2"/><line x1="${cx}" y1="${y0}" x2="${cx}" y2="${y0 + H}" stroke="${C_V}" stroke-width="3.2"/>`;
+  for (const [x, y] of [[cx, y0], [x0 + W, cy], [cx, y0 + H], [x0, cy]]) s += `<circle cx="${x}" cy="${y}" r="5" fill="${C_S}" stroke="#fff" stroke-width="1.5"/>`;
+  for (const t of [.25, .75]) s += `<line x1="${x0 + W * t}" y1="${y0 - 6}" x2="${x0 + W * t}" y2="${y0 + 6}" stroke="${C_RECT}" stroke-width="2.5"/><line x1="${x0 + W * t}" y1="${y0 + H - 6}" x2="${x0 + W * t}" y2="${y0 + H + 6}" stroke="${C_RECT}" stroke-width="2.5"/><line x1="${x0 - 6}" y1="${y0 + H * t}" x2="${x0 + 6}" y2="${y0 + H * t}" stroke="${C_RECT}" stroke-width="2.5"/><line x1="${x0 + W - 6}" y1="${y0 + H * t}" x2="${x0 + W + 6}" y2="${y0 + H * t}" stroke="${C_RECT}" stroke-width="2.5"/>`;
+  if (!o.noNums) {
+    s += dim(x0, y0 + H, x0 + W, y0 + H, 0, 1, 28, C_H, `${w} cm`);
+    s += dim(x0 + W, y0, x0 + W, y0 + H, 1, 0, 8 + (tw(`${h} cm`) + 20) / 2, C_V, `${h} cm`);
+  }
+  return s + "</svg>";
+}
+function figTwoRhombus(a, b, c, x) {
+  const k = Math.min(132 / Math.max(a, c), 118 / Math.max(b, x)), cy = 106;
+  const one = (cx, h, v, lh, lv, name, unknown) => {
+    const hw = h * k / 2, hh = v * k / 2, T = [cx, cy - hh], B = [cx, cy + hh], L = [cx - hw, cy], R = [cx + hw, cy], cv = unknown ? C_Q : C_V;
+    return `<polygon points="${L[0]},${cy} ${cx},${T[1]} ${R[0]},${cy} ${cx},${B[1]}" fill="${unknown ? "#fff4c7" : "#fff0de"}" stroke="${C_LINE}" stroke-width="3.5" stroke-linejoin="round"/>
+      <line x1="${L[0]}" y1="${cy}" x2="${R[0]}" y2="${cy}" stroke="${C_H}" stroke-width="3"/>
+      <line x1="${cx}" y1="${T[1]}" x2="${cx}" y2="${B[1]}" stroke="${cv}" stroke-width="3"/>
+      ${rightMark(cx, cy)}
+      ${dim(L[0], L[1], R[0], R[1], 0, 1, hh + 26, C_H, lh)}
+      ${dim(T[0], T[1], B[0], B[1], unknown ? 1 : -1, 0, hw + 8 + (tw(lv) + 20) / 2, cv, lv)}
+      <text x="${cx}" y="250" text-anchor="middle" font-family="Jua,sans-serif" font-size="24" fill="#c9611f">${name}</text>`;
+  };
+  return `<svg viewBox="0 0 490 262" xmlns="http://www.w3.org/2000/svg">${one(142, a, b, a + " cm", b + " cm", "㉮", false)}${one(350, c, x, c + " cm", "? cm", "㉯", true)}</svg>`;
+}
+// 퀘스트 6 풀이용 막대 그림
+function figBars(s, diff) {
+  const k = Math.min(16, 220 / (s + diff)), x0 = 112, y1 = 14, y2 = 62, h = 34;
+  const box = (x, y, w, fill, stroke, txt, col) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/><text x="${x + w / 2}" y="${y + 23}" text-anchor="middle" font-family="Jua,sans-serif" font-size="20" fill="${col}">${txt}</text>`;
+  const lab = (y, t, col) => `<text x="${x0 - 10}" y="${y + 23}" text-anchor="end" font-family="Jua,sans-serif" font-size="16" fill="${col}">${t}</text>`;
+  return `<svg viewBox="0 0 360 112" xmlns="http://www.w3.org/2000/svg">${lab(y1, "짧은 대각선", C_V)}${box(x0, y1, s * k, "#d9f1d2", C_V, "□", C_V)}${lab(y2, "긴 대각선", C_H)}${box(x0, y2, s * k, "#d9f1d2", C_V, "□", C_V)}${box(x0 + s * k, y2, diff * k, "#ffe3c4", C_S, diff, C_S)}</svg>`;
+}
+// 퀘스트 3 보기 그림: 모눈 위 마름모 (가로 h칸, 세로 v칸)
+function figGrid(h, v) {
+  const cols = 11, rows = 8, c = 15, P = 6, L = Math.floor((cols - h) / 2), T = (rows - v) / 2;
+  let s = `<svg viewBox="0 0 ${cols * c + 2 * P} ${rows * c + 2 * P}" xmlns="http://www.w3.org/2000/svg"><rect x="${P}" y="${P}" width="${cols * c}" height="${rows * c}" fill="#fff"/>`;
+  for (let i = 0; i <= cols; i++) s += `<line x1="${P + i * c}" y1="${P}" x2="${P + i * c}" y2="${P + rows * c}" stroke="#cfe3f3" stroke-width="1"/>`;
+  for (let j = 0; j <= rows; j++) s += `<line x1="${P}" y1="${P + j * c}" x2="${P + cols * c}" y2="${P + j * c}" stroke="#cfe3f3" stroke-width="1"/>`;
+  const x1 = P + L * c, x2 = P + (L + h) * c, xm = (x1 + x2) / 2, y1 = P + T * c, y2 = P + (T + v) * c, ym = (y1 + y2) / 2;
+  s += `<polygon points="${x1},${ym} ${xm},${y1} ${x2},${ym} ${xm},${y2}" fill="rgba(255,200,150,.45)" stroke="${C_LINE}" stroke-width="3" stroke-linejoin="round"/>`;
+  s += `<line x1="${x1}" y1="${ym}" x2="${x2}" y2="${ym}" stroke="${C_H}" stroke-width="2.5"/><line x1="${xm}" y1="${y1}" x2="${xm}" y2="${y2}" stroke="${C_V}" stroke-width="2.5"/>`;
+  return s + "</svg>";
+}
+function gridDistractors(v) {
+  const o = v.area * 2 / v.d, out = [];
+  for (const x of [v.area / v.d, o + 1, o - 1, o + 2, o - 2, o + 3]) if (Number.isInteger(x) && x > 0 && x <= 9 && x !== o && !out.includes(x)) out.push(x);
+  return out.slice(0, 3);
+}
+
+/* =====================================================================
+   감자 캐릭터 · 새싹 · 영양분 그림
+   ===================================================================== */
+function leaf(x, y, rot, L, c = "#72c94c") {
+  const w = L * .42;
+  return `<g transform="translate(${x} ${y}) rotate(${rot})"><path d="M0 0 C${L * .25} ${-w} ${L * .8} ${-w} ${L} 0 C${L * .8} ${w} ${L * .25} ${w} 0 0Z" fill="${c}" stroke="#3f8f2c" stroke-width="1.3" stroke-linejoin="round"/><path d="M${L * .1} 0 L${L * .85} 0" stroke="#3f8f2c" stroke-width="1" opacity=".55"/></g>`;
+}
+const stemP = (top, w = 4) => `<path d="M60 49 Q59 ${(49 + top) / 2} 60 ${top}" fill="none" stroke="#4fa23a" stroke-width="${w}" stroke-linecap="round"/>`;
+const pair = (y, L, a) => leaf(60, y, -a, L) + leaf(60, y, a - 180, L, "#68bd45");
+function flowerAt(x, y) {
+  let p = ""; for (let i = 0; i < 5; i++) p += `<ellipse cx="0" cy="-7" rx="5" ry="7" fill="#f7efff" stroke="#b58be0" stroke-width="1.3" transform="rotate(${i * 72})"/>`;
+  return `<g transform="translate(${x} ${y})">${p}<circle r="4.2" fill="#ffd23d" stroke="#e5a600" stroke-width="1.2"/><circle cx="-1.3" cy="-1.3" r="1.3" fill="#fff3a8"/></g>`;
+}
+const budAt = (x, y) => `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="-2" rx="5" ry="7" fill="#c9a2ee" stroke="#9566c9" stroke-width="1.3"/><path d="M-6 3 Q0 -2 6 3 Q0 8 -6 3Z" fill="#5fb040" stroke="#3f8f2c" stroke-width="1.2"/></g>`;
+function sproutParts() {
+  const g = (n, inner) => `<g class="sp" data-n="${n}">${inner}</g>`;
+  const big = pair(41, 17, 10) + pair(33, 16, 30) + pair(25, 14, 52);
+  return [
+    g(1, stemP(40, 3.5) + pair(40, 10, 35)),
+    g(2, stemP(34) + pair(34, 15, 30)),
+    g(3, stemP(28) + pair(37, 15, 18) + pair(28, 13, 55)),
+    g(4, stemP(22) + pair(40, 16, 12) + pair(31, 15, 35) + pair(22, 13, 62)),
+    g(5, stemP(18, 4.5) + big + budAt(60, 15)),
+    g(6, stemP(18, 4.5) + big + flowerAt(60, 15))
+  ].join("");
+}
+function setStage(n, root = $("#sq")) {
+  root.querySelectorAll(".sp").forEach(e => e.classList.toggle("on", Number(e.dataset.n) === n));
+}
+function potatoSVG(uid = "a") {
+  const skin = "#dcad6c", skinL = "#efcd93", skinD = "#c28a4b", line = "#96602f", spot = "#a8703a", dk = "#3a2314";
+  const body = "M60 46 C86 46 102 68 102 98 C102 126 86 142 60 142 C34 142 18 126 18 98 C18 68 34 46 60 46Z";
+  return `<svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="pg${uid}" cx="36%" cy="26%" r="88%"><stop offset="0" stop-color="${skinL}"/><stop offset=".55" stop-color="${skin}"/><stop offset="1" stop-color="${skinD}"/></radialGradient>
+    <clipPath id="pc${uid}"><path d="${body}"/></clipPath>
+  </defs>
+  <ellipse cx="60" cy="153" rx="36" ry="5" fill="rgba(60,40,10,.2)"/>
+  <g class="sq-leg-b"><path d="M48 134 L48 147 Q48 152 43 152" stroke="${line}" stroke-width="6.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="sq-leg-f"><path d="M72 134 L72 147 Q72 152 77 152" stroke="${line}" stroke-width="6.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="sq-body">
+    <g class="sq-arm-l"><path d="M21 90 Q8 93 8 108" stroke="${line}" stroke-width="6.5" fill="none" stroke-linecap="round"/></g>
+    <g class="sq-arm-r"><path d="M99 90 Q112 93 112 108" stroke="${line}" stroke-width="6.5" fill="none" stroke-linecap="round"/></g>
+    <path d="${body}" fill="url(#pg${uid})"/>
+    <g clip-path="url(#pc${uid})">
+      <ellipse cx="42" cy="66" rx="17" ry="11" fill="#f3d9a8" opacity=".6"/>
+      <ellipse cx="80" cy="64" rx="13" ry="9" fill="#c28c4f" opacity=".4"/>
+      <ellipse cx="82" cy="116" rx="20" ry="15" fill="#b57a3d" opacity=".38"/>
+      <ellipse cx="34" cy="120" rx="12" ry="9" fill="#c9965a" opacity=".45"/>
+      <ellipse cx="58" cy="82" rx="14" ry="8" fill="#e8c386" opacity=".35"/>
+      <ellipse cx="60" cy="132" rx="26" ry="9" fill="#a8703a" opacity=".3"/>
+    </g>
+    <ellipse cx="36" cy="62" rx="3.4" ry="2.3" fill="${spot}" transform="rotate(-25 36 62)"/>
+    <ellipse cx="82" cy="78" rx="2.6" ry="1.8" fill="${spot}" opacity=".85"/>
+    <ellipse cx="30" cy="104" rx="2.4" ry="1.7" fill="${spot}" opacity=".8"/>
+    <ellipse cx="88" cy="126" rx="3" ry="2" fill="${spot}" opacity=".85"/>
+    <ellipse cx="50" cy="127" rx="2.4" ry="1.6" fill="${spot}" opacity=".7"/>
+    <path d="${body}" fill="none" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+    <ellipse cx="38" cy="107" rx="8.5" ry="5.8" fill="#f598a6" opacity=".85"/>
+    <ellipse cx="82" cy="107" rx="8.5" ry="5.8" fill="#f598a6" opacity=".85"/>
+    <g class="sq-eye"><ellipse cx="47" cy="94" rx="4.6" ry="5.2" fill="${dk}"/><circle cx="48.7" cy="92.2" r="1.5" fill="#fff"/></g>
+    <g class="sq-eye"><ellipse cx="73" cy="94" rx="4.6" ry="5.2" fill="${dk}"/><circle cx="74.7" cy="92.2" r="1.5" fill="#fff"/></g>
+    <path d="M54 103 Q60 110 66 103" stroke="${dk}" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    ${sproutParts()}
+  </g>
+  </svg>`;
+}
+const N_SVG = {
+  water: `<svg viewBox="0 0 40 46" xmlns="http://www.w3.org/2000/svg"><path d="M20 3 C20 3 5 21 5 30 C5 38.5 11.7 44 20 44 C28.3 44 35 38.5 35 30 C35 21 20 3 20 3Z" fill="#48a9f0" stroke="#2477c4" stroke-width="2.5" stroke-linejoin="round"/><path d="M11 30 C11 35 14 38 18 39" stroke="#d3ecff" stroke-width="3.2" fill="none" stroke-linecap="round"/></svg>`,
+  sun: `<svg viewBox="0 0 40 46" xmlns="http://www.w3.org/2000/svg">${[0, 45, 90, 135, 180, 225, 270, 315].map(a => `<line x1="20" y1="3" x2="20" y2="9" stroke="#ffb01f" stroke-width="3.6" stroke-linecap="round" transform="translate(0 23) rotate(${a} 20 0) translate(0 -23)"/>`).join("")}<circle cx="20" cy="23" r="12" fill="#ffd23d" stroke="#f29b0e" stroke-width="2.5"/><circle cx="16" cy="21" r="1.7" fill="#7a4a10"/><circle cx="24" cy="21" r="1.7" fill="#7a4a10"/><path d="M16 27 Q20 31 24 27" stroke="#7a4a10" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>`,
+  compost: `<svg viewBox="0 0 40 46" xmlns="http://www.w3.org/2000/svg"><path d="M3 41 C5 25 13 17 20 17 C27 17 35 25 37 41Z" fill="#7a4a26" stroke="#4f2d17" stroke-width="2.5" stroke-linejoin="round"/><ellipse cx="14" cy="32" rx="3" ry="2" fill="#a06a3c"/><ellipse cx="25" cy="28" rx="3.4" ry="2.2" fill="#a06a3c"/><ellipse cx="22" cy="37" rx="2.6" ry="1.8" fill="#9a6538"/><path d="M20 7 L21.8 11.2 L26 13 L21.8 14.8 L20 19 L18.2 14.8 L14 13 L18.2 11.2Z" fill="#ffe66b" stroke="#e0a800" stroke-width="1"/></svg>`,
+  air: `<svg viewBox="0 0 40 46" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#4fb0ee" stroke-width="3.8" stroke-linecap="round"><path d="M4 15 H23 C31 15 31 5 24 6"/><path d="M4 25 H31 C39 25 39 36 31 34"/><path d="M4 35 H19 C26 35 26 43 20 42"/></g><path d="M29 14 q6 -7 10 -3 q-4 7 -10 3z" fill="#7ccd55" stroke="#3f8f2c" stroke-width="1.2"/></svg>`,
+  worm: `<svg viewBox="0 0 40 46" xmlns="http://www.w3.org/2000/svg"><path d="M6 36 C9 20 18 20 20 29 C22 38 30 38 33 22" fill="none" stroke="#e9758f" stroke-width="9" stroke-linecap="round"/><path d="M6 36 C9 20 18 20 20 29 C22 38 30 38 33 22" fill="none" stroke="#f9a9bc" stroke-width="9" stroke-linecap="round" stroke-dasharray="1.6 5.2"/><circle cx="32" cy="20" r="1.5" fill="#4a2030"/><circle cx="36.5" cy="22" r="1.5" fill="#4a2030"/><path d="M32 25 Q34.5 27.5 37 25" stroke="#4a2030" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>`,
+  vitamin: `<svg viewBox="0 0 40 46" xmlns="http://www.w3.org/2000/svg"><rect x="14" y="2" width="12" height="7" rx="2" fill="#c98d4e" stroke="#8a5a2b" stroke-width="1.6"/><path d="M15 9 H25 V15 C29 18 33 24 33 31 C33 38 29 44 20 44 C11 44 7 38 7 31 C7 24 11 18 15 15Z" fill="#fdf0ff" stroke="#a46fd2" stroke-width="2.5" stroke-linejoin="round"/><path d="M8 29 C14 26 26 32 32.5 29 C34 38 29 43.5 20 43.5 C11 43.5 6 38 8 29Z" fill="#ff7fc2"/><path d="M20 38 C16 35 15 32 17.5 30.8 C19 30.2 20 31.5 20 31.5 C20 31.5 21 30.2 22.5 30.8 C25 32 24 35 20 38Z" fill="#fff"/></svg>`
+};
+const SPROUT_ICON = `<svg viewBox="0 0 40 46" xmlns="http://www.w3.org/2000/svg"><ellipse cx="20" cy="41" rx="11" ry="3.5" fill="#b9814a"/><path d="M20 41 V22" stroke="#4fa23a" stroke-width="4" stroke-linecap="round"/><path d="M20 25 C8 25 4 15 6 8 C14 8 20 14 20 25Z" fill="#72c94c" stroke="#3f8f2c" stroke-width="2"/><path d="M20 21 C20 12 26 6 36 6 C37 16 30 22 20 21Z" fill="#8bd965" stroke="#3f8f2c" stroke-width="2"/></svg>`;
+const NUTRIENTS = [
+  { name: "물", obj: "물을", emoji: "💧", color: "#3a9be0", svg: N_SVG.water, grow: "시원한 물을 꿀꺽! 싹이 톡 올라왔어요", tip: "씨앗(감자)이 물을 마시면 싹이 틀 수 있어요." },
+  { name: "햇빛", obj: "햇빛을", emoji: "☀️", color: "#ffb61f", svg: N_SVG.sun, grow: "따뜻한 햇빛을 받아 잎이 쏙 났어요", tip: "식물은 햇빛을 받아 스스로 양분을 만들어요." },
+  { name: "거름", obj: "거름을", emoji: "🌱", color: "#8a5a33", svg: N_SVG.compost, grow: "영양 가득 거름을 먹고 줄기가 쑥 자랐어요", tip: "거름에는 식물이 크는 데 필요한 영양분이 들어 있어요." },
+  { name: "맑은 공기", obj: "맑은 공기를", emoji: "🍃", color: "#5fc3ee", svg: N_SVG.air, grow: "맑은 공기를 마시고 잎이 더 많아졌어요", tip: "식물의 잎은 공기를 이용해서 양분을 만들어요." },
+  { name: "꽃 영양제", obj: "꽃 영양제를", emoji: "🧪", color: "#b27ae0", svg: N_SVG.vitamin, grow: "꽃 영양제를 먹고 꽃이 활짝 피었어요!", tip: "꽃을 피우려면 힘이 많이 필요해서 영양제를 먹어요." }
+];
+
+/* =====================================================================
+   숲 배경 만들기
+   ===================================================================== */
+const DH = 600;
+const STATIONS = [720, 1380, 2040, 2700, 3360];
+const START_X = 250, NEST_X = 4020, WORLD_W = 4390;
+const pathY = x => 478 + 7 * Math.sin(x / 230);
+function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+function roundTree(x, y, s) {
+  return `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-9" y="-72" width="18" height="74" rx="6" fill="#8b5a32"/>
+  <circle cx="0" cy="-98" r="46" fill="#4b9532"/><circle cx="-29" cy="-80" r="32" fill="#5aab3c"/><circle cx="27" cy="-82" r="34" fill="#53a338"/>
+  <circle cx="-8" cy="-122" r="30" fill="#69b946"/><circle cx="14" cy="-110" r="15" fill="#8acf62" opacity=".75"/></g>`;
+}
+function pineTree(x, y, s) {
+  return `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-7" y="-40" width="14" height="42" fill="#7a4c2a"/>
+  <path d="M0 -175 L-38 -105 L-20 -105 L-50 -55 L-28 -55 L-62 -8 L62 -8 L28 -55 L50 -55 L20 -105 L38 -105Z" fill="#2e7a39"/>
+  <path d="M0 -175 L-38 -105 L-20 -105 L-50 -55 L-28 -55 L-62 -8 L0 -8Z" fill="#3a9147"/></g>`;
+}
+function bush(x, y, s) { return `<g transform="translate(${x} ${y}) scale(${s})"><circle cx="-18" cy="-14" r="18" fill="#4f9a35"/><circle cx="12" cy="-16" r="22" fill="#5cab3f"/><circle cx="-2" cy="-26" r="18" fill="#6cbb4a"/></g>`; }
+function flower(x, y, c) { return `<g transform="translate(${x} ${y})"><path d="M0 0 L0 -12" stroke="#4b8f2e" stroke-width="2"/><g transform="translate(0 -14)"><circle cx="0" cy="-4" r="3.4" fill="${c}"/><circle cx="4" cy="0" r="3.4" fill="${c}"/><circle cx="0" cy="4" r="3.4" fill="${c}"/><circle cx="-4" cy="0" r="3.4" fill="${c}"/><circle r="2.4" fill="#ffd54a"/></g></g>`; }
+function tuft(x, y) { return `<path d="M${x - 8} ${y} Q${x - 6} ${y - 14} ${x - 10} ${y - 20} M${x} ${y} Q${x + 1} ${y - 16} ${x - 1} ${y - 24} M${x + 8} ${y} Q${x + 7} ${y - 12} ${x + 12} ${y - 18}" stroke="#4f9a35" stroke-width="3" fill="none" stroke-linecap="round"/>`; }
+function mushroom(x, y) { return `<g transform="translate(${x} ${y})"><rect x="-4" y="-12" width="8" height="12" rx="3" fill="#fff5e6"/><path d="M-13 -11 Q0 -28 13 -11 Z" fill="#e2463f"/><circle cx="-4" cy="-17" r="2" fill="#fff"/><circle cx="5" cy="-15" r="1.7" fill="#fff"/></g>`; }
+
+function buildScene() {
+  const r = rng(11);
+  // 먼 산
+  const FAR_W = Math.round(WORLD_W * .15 + 2600);
+  let back = `M0 600 L0 250`, front = `M0 600 L0 290`;
+  for (let x = 0; x < FAR_W; x += 200) back += ` Q${x + 100} ${120 + r() * 70} ${x + 200} ${240 + r() * 30}`;
+  for (let x = 0; x < FAR_W; x += 150) front += ` Q${x + 75} ${200 + r() * 55} ${x + 150} ${285 + r() * 20}`;
+  $("#farL").style.width = FAR_W + "px";
+  $("#farL").innerHTML = `<svg width="${FAR_W}" height="600"><path d="${back} L${FAR_W} 600Z" fill="#a8d0e6"/><path d="M0 0" /><path d="${front} L${FAR_W} 600Z" fill="#93c7a5"/></svg>`;
+  // 중간 언덕
+  const MID_W = Math.round(WORLD_W * .45 + 2600);
+  let hill = `M0 600`, trees = "";
+  for (let x = 0; x <= MID_W; x += 30) hill += ` L${x} ${330 + 20 * Math.sin(x / 210) + 10 * Math.sin(x / 97)}`;
+  for (let x = 20; x < MID_W; x += 40 + r() * 70) trees += pineTree(x, 342 + 20 * Math.sin(x / 210) + 10 * Math.sin(x / 97), .3 + r() * .25).replace(/#2e7a39|#3a9147/g, "#4f9440").replace("#7a4c2a", "#4f9440");
+  $("#midL").style.width = MID_W + "px";
+  $("#midL").innerHTML = `<svg width="${MID_W}" height="600">${trees}<path d="${hill} L${MID_W} 600Z" fill="#84c25c"/></svg>`;
+  // 땅, 나무, 길
+  let g = `<defs><linearGradient id="gg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9ad063"/><stop offset="1" stop-color="#6aa843"/></linearGradient></defs>`;
+  let top = `M0 600`; for (let x = 0; x <= WORLD_W; x += 40) top += ` L${x} ${376 + 8 * Math.sin(x / 300)}`;
+  g += `<path d="${top} L${WORLD_W} 600Z" fill="url(#gg)"/>`;
+  let bt = "";
+  for (let x = 30; x < WORLD_W - 120; x += 85 + r() * 110) {
+    if (Math.abs(x - (NEST_X + 70)) < 200) continue;
+    const y = 400 + r() * 26, s = .55 + r() * .4, kind = r();
+    bt += kind < .45 ? pineTree(x, y, s) : kind < .85 ? roundTree(x, y, s) : bush(x, y + 6, s * 1.3);
+  }
+  g += bt;
+  // 둥지 나무
+  const NX = NEST_X + 70;
+  g += `<g transform="translate(${NX} 470)">
+    <circle cx="-95" cy="-300" r="85" fill="#4b9532"/><circle cx="95" cy="-300" r="88" fill="#53a338"/><circle cx="0" cy="-350" r="105" fill="#5aab3c"/>
+    <circle cx="-40" cy="-395" r="60" fill="#69b946"/><circle cx="55" cy="-380" r="45" fill="#8acf62" opacity=".7"/>
+    <path d="M-58 4 C-46 -60 -42 -160 -38 -265 L38 -265 C42 -160 46 -60 62 4 Z" fill="#8b5a32"/>
+    <path d="M-58 4 Q-78 8 -92 2 Q-70 -4 -54 -16Z M62 4 Q82 8 96 2 Q74 -4 58 -16Z" fill="#7a4c2a"/>
+    <path d="M-20 -40 Q-14 -90 -22 -130 M18 -60 Q24 -110 16 -170 M-6 -190 Q0 -220 -8 -250" stroke="#6b4223" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </g>`;
+  // 길
+  let up = [], dn = [];
+  for (let x = 0; x <= WORLD_W; x += 30) { up.push(`${x},${pathY(x) - 24 - 3 * Math.sin(x / 57)}`); dn.push(`${x},${pathY(x) + 28 + 3 * Math.sin(x / 71)}`); }
+  g += `<polygon points="${up.join(" ")} ${dn.reverse().join(" ")}" fill="#ecd29a"/>`;
+  g += `<polyline points="${up.join(" ")}" fill="none" stroke="#d6b77a" stroke-width="3"/>`;
+  for (let x = 20; x < WORLD_W; x += 60 + r() * 90) g += `<ellipse cx="${x}" cy="${pathY(x) - 10 + r() * 30}" rx="${3 + r() * 4}" ry="${2 + r() * 2}" fill="#cdb07a"/>`;
+  // 앞쪽 꽃·풀
+  const cols = ["#ff8fb1", "#ffffff", "#ffd54a", "#b892ff", "#ff7a6b"];
+  for (let x = 10; x < WORLD_W; x += 22 + r() * 40) {
+    const y = 522 + r() * 72, k = r();
+    g += k < .5 ? flower(x, y, cols[Math.floor(r() * cols.length)]) : k < .93 ? tuft(x, y) : mushroom(x, y);
+  }
+  for (let x = 60; x < WORLD_W; x += 120 + r() * 160) g += tuft(x, pathY(x) - 22);
+  let html = `<svg width="${WORLD_W}" height="600" style="position:absolute;left:0;top:0">${g}</svg>`;
+  STATIONS.forEach((sx, i) => {
+    html += `<div class="station" id="st${i}" style="left:${sx + 100}px;top:${pathY(sx + 100) - 14}px"><div class="bubble">?</div><div class="board">퀘스트<b>${i + 1}</b></div><div class="post"></div></div>`;
+  });
+  html += `<div id="sq"><div class="sq-in">${potatoSVG("s")}</div><div class="nametag" id="nametag"></div></div>`;
+  const gl = $("#groundL"); gl.style.width = WORLD_W + "px"; gl.innerHTML = html;
+}
+
+/* =====================================================================
+   유틸 · 소리
+   ===================================================================== */
+function $(s) { return document.querySelector(s); }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function plain(html) { const d = document.createElement("div"); d.innerHTML = html; return d.textContent.replace(/\s+/g, " ").trim(); }
+function val(Q, v, f) { if (v && v[f] !== undefined) return v[f]; const x = Q[f]; return typeof x === "function" ? x(v) : x; }
+function esc(s) { return String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+const half = x => { const h = Math.round(x * 2) / 2; return Number.isInteger(h) ? String(h) : h.toFixed(1); };
+
+let AC = null;
+function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { } } if (AC && AC.state === "suspended") AC.resume(); return AC; }
+function tone(f, start, dur, type = "sine", vol = .16) {
+  const a = ac(); if (!a || S.muted) return;
+  const o = a.createOscillator(), g = a.createGain(), t = a.currentTime + start;
+  o.type = type; o.frequency.value = f;
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .05);
+}
+const SFX = {
+  chime() { [659, 784, 988, 1319].forEach((f, i) => tone(f, i * .09, .55, "triangle", .14)); },
+  correct() { [784, 988, 1175].forEach((f, i) => tone(f, i * .1, .45, "triangle", .16)); },
+  wrong() { tone(260, 0, .22, "square", .05); tone(200, .16, .3, "square", .05); },
+  drop() { tone(988, 0, .12, "sine", .16); tone(1480, .09, .18, "sine", .12); },
+  fanfare() { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone(f, i * .14, .5, "triangle", .15)); }
+};
+
+/* =====================================================================
+   기록 저장
+   ===================================================================== */
+const LS_KEY = "squirrel-rhombus-records-v1";
+const briefOf = (Q, v) => val(Q, v, "brief") ?? plain(val(Q, v, "q"));
+function correctOf(Q, v) {
+  if (Q.type === "choice") { const c = val(Q, v, "choices")[val(Q, v, "answer")]; return typeof c === "string" ? plain(c) : c.text; }
+  return `${val(Q, v, "answer")} ${val(Q, v, "unit") || ""}`.trim();
+}
+function fmtT(sec) { return sec == null ? "" : `${Math.floor(sec / 60)}분 ${sec % 60}초`; }
+// 선생님용 요약: ① 퀘스트별 정답 여부 ② 퀘스트별 걸린 시간 ③ 오답 발생 문항 ④ 최종 퀘스트 달성 여부
+function summary() {
+  const got = S.done.filter(Boolean).length;
+  return {
+    achieved: got === QUESTS.length ? "달성" : `미달성 (${got}/${QUESTS.length})`,
+    nutrients: got,
+    totalTime: fmtT(Math.round((Date.now() - S.startedAt) / 1000)),
+    perQuest: QUESTS.map((_, i) => S.done[i] ? (S.wrongs[i] ? `O (${S.tries[i]}번째에 정답)` : "O (한 번에 정답)") : (S.tries[i] ? "X (아직 못 풂)" : "-")),
+    perTime: S.qTime.map(fmtT),
+    wrongQuests: S.wrongs.map((w, i) => w ? `${i + 1}번(${w}회)` : null).filter(Boolean).join(", ") || "없음",
+    totalWrong: S.wrongs.reduce((a, b) => a + b, 0),
+    wrongDetail: S.wrongLog.map(w => `${w.quest}번 [${w.brief}] 내가 고른 답: ${w.answer} (정답: ${w.correct})`),
+    // 실시간 선생님 화면용
+    current: S.started ? S.qi + 1 : 0,
+    finished: got === QUESTS.length,
+    doneArr: QUESTS.map((_, i) => !!S.done[i]),
+    wrongsArr: QUESTS.map((_, i) => S.wrongs[i] || 0),
+    startedAt: S.startedAt
+  };
+}
+function record(ev) {
+  const row = Object.assign({ time: new Date().toISOString(), name: S.name, sessionId: S.session, elapsed: Math.round((Date.now() - S.startedAt) / 1000) }, ev, { summary: summary() });
+  const live = row.event === "ping" || row.event === "quest";
+  if (!live) try { const all = JSON.parse(localStorage.getItem(LS_KEY) || "[]"); all.push(row); localStorage.setItem(LS_KEY, JSON.stringify(all)); } catch (e) { }
+  if (CONFIG.SHEET_URL) {
+    try { fetch(CONFIG.SHEET_URL, { method: "POST", mode: "no-cors", keepalive: true, headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(row) }).catch(() => { }); } catch (e) { }
+  }
+}
+
+/* =====================================================================
+   그리기 판 (퀘스트 3)
+   ===================================================================== */
+function DrawPad(host, cols, rows) {
+  const P = { mode: "free", strokes: [], poly: [], cell: 30, pad: 14, onchange: null };
+  host.innerHTML = `<div class="pad-tools">
+      <button type="button" class="tool on" data-m="free">✏️ 자유롭게 그리기</button>
+      <button type="button" class="tool" data-m="point">📍 점 찍어 그리기</button>
+      <button type="button" class="tool" data-m="clear">🧽 다 지우기</button></div>
+    <div class="pad-wrap"><canvas></canvas></div>
+    <div class="pad-tip" id="padTip">손가락이나 마우스로 마름모를 그려요. (모눈 한 칸 = 1 cm)</div>`;
+  const cv = host.querySelector("canvas"), ctx = cv.getContext("2d"), tip = host.querySelector("#padTip");
+  const tips = { free: "손가락이나 마우스로 마름모를 그려요. (모눈 한 칸 = 1 cm)", point: "꼭짓점 4개를 차례로 콕콕 찍으면 선이 이어져요. (모눈 한 칸 = 1 cm)" };
+  function size() {
+    const w = Math.min(host.clientWidth || 320, 470);
+    P.cell = Math.max(18, Math.floor((w - P.pad * 2) / cols));
+    const cw = P.cell * cols + P.pad * 2, ch = P.cell * rows + P.pad * 2, dpr = window.devicePixelRatio || 1;
+    cv.width = cw * dpr; cv.height = ch * dpr; cv.style.width = cw + "px"; cv.style.height = ch + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); draw();
+  }
+  const px = p => [P.pad + p.x * P.cell, P.pad + p.y * P.cell];
+  function draw() {
+    const c = P.cell, o = P.pad;
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.fillStyle = "#fff"; ctx.fillRect(o, o, c * cols, c * rows);
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= cols; i++) { ctx.strokeStyle = i % 5 === 0 ? "#9cc7e6" : "#d3e7f5"; ctx.beginPath(); ctx.moveTo(o + i * c + .5, o); ctx.lineTo(o + i * c + .5, o + rows * c); ctx.stroke(); }
+    for (let j = 0; j <= rows; j++) { ctx.strokeStyle = j % 5 === 0 ? "#9cc7e6" : "#d3e7f5"; ctx.beginPath(); ctx.moveTo(o, o + j * c + .5); ctx.lineTo(o + cols * c, o + j * c + .5); ctx.stroke(); }
+    ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#d9622b"; ctx.lineWidth = 3.5;
+    for (const s of P.strokes) { ctx.beginPath(); s.forEach((p, i) => { const [x, y] = px(p); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); if (s.length === 1) { const [x, y] = px(s[0]); ctx.lineTo(x + .1, y); } ctx.stroke(); }
+    if (P.poly.length) {
+      ctx.beginPath(); P.poly.forEach((p, i) => { const [x, y] = px(p); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+      if (P.poly.length >= 3) { ctx.closePath(); ctx.fillStyle = "rgba(232,132,60,.16)"; ctx.fill(); }
+      ctx.stroke();
+      ctx.fillStyle = "#d9622b"; for (const p of P.poly) { const [x, y] = px(p); ctx.beginPath(); ctx.arc(x, y, 5.5, 0, Math.PI * 2); ctx.fill(); }
+    }
+  }
+  const pt = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left - P.pad) / P.cell, y: (e.clientY - r.top - P.pad) / P.cell }; };
+  let cur = null;
+  cv.addEventListener("pointerdown", e => {
+    e.preventDefault(); const p = pt(e);
+    if (P.mode === "free") { cur = [p]; P.strokes.push(cur); try { cv.setPointerCapture(e.pointerId); } catch (_) { } }
+    else {
+      if (P.poly.length >= 4) { tip.textContent = "꼭짓점은 4개면 충분해요! 다시 그리려면 '다 지우기'를 눌러요."; return; }
+      const q = { x: Math.min(cols, Math.max(0, Math.round(p.x * 2) / 2)), y: Math.min(rows, Math.max(0, Math.round(p.y * 2) / 2)) };
+      if (P.poly.some(a => a.x === q.x && a.y === q.y)) return;
+      P.poly.push(q);
+    }
+    draw(); P.onchange && P.onchange();
+  });
+  cv.addEventListener("pointermove", e => { if (!cur) return; const p = pt(e), l = cur[cur.length - 1]; if (Math.hypot(p.x - l.x, p.y - l.y) > .05) { cur.push(p); draw(); } });
+  const end = () => { cur = null; };
+  cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end); cv.addEventListener("pointerleave", end);
+  host.querySelectorAll(".tool").forEach(b => b.addEventListener("click", () => {
+    const m = b.dataset.m; P.strokes = []; P.poly = [];
+    if (m !== "clear") { P.mode = m; host.querySelectorAll(".tool").forEach(t => t.classList.toggle("on", t.dataset.m === m)); }
+    tip.textContent = tips[P.mode]; draw(); P.onchange && P.onchange();
+  }));
+  P.points = () => {
+    if (P.mode === "point") return P.poly.length >= 3 ? samplePath(P.poly, true) : [];
+    let out = []; for (const s of P.strokes) out = out.concat(samplePath(s, false)); return out;
+  };
+  P.resize = size;
+  size();
+  return P;
+}
+
+// ---- GEOM-START (마름모 그림 채점) ----
+function samplePath(pts, closed, step = .1) {
+  const n = pts.length, out = []; if (!n) return out; if (n === 1) return [pts[0]];
+  const segs = closed ? n : n - 1;
+  for (let i = 0; i < segs; i++) {
+    const a = pts[i], b = pts[(i + 1) % n], L = Math.hypot(b.x - a.x, b.y - a.y), k = Math.max(1, Math.ceil(L / step));
+    for (let j = 0; j < k; j++) out.push({ x: a.x + (b.x - a.x) * j / k, y: a.y + (b.y - a.y) * j / k });
+  }
+  if (!closed) out.push(pts[n - 1]);
+  return out;
+}
+function convexHull(P) {
+  const pts = P.map(p => [p.x, p.y]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  if (pts.length < 3) return pts;
+  const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lo = [], up = [];
+  for (const p of pts) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+  for (let i = pts.length - 1; i >= 0; i--) { const p = pts[i]; while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
+  up.pop(); lo.pop(); return lo.concat(up);
+}
+function polyArea(h) { let s = 0; for (let i = 0; i < h.length; i++) { const a = h[i], b = h[(i + 1) % h.length]; s += a[0] * b[1] - b[0] * a[1]; } return Math.abs(s) / 2; }
+function segDist(p, a, b) { const dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy; let t = L2 ? ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L2 : 0; t = Math.max(0, Math.min(1, t)); return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy); }
+function analyzeRhombus(points) {
+  if (points.length < 3) return { empty: true };
+  const h = convexHull(points); if (h.length < 3) return { empty: true };
+  const area = polyArea(h); if (area < 1) return { empty: true };
+  let L = 0, A, B;
+  for (let i = 0; i < h.length; i++) for (let j = i + 1; j < h.length; j++) { const d = Math.hypot(h[i][0] - h[j][0], h[i][1] - h[j][1]); if (d > L) { L = d; A = h[i]; B = h[j]; } }
+  const ux = (B[0] - A[0]) / L, uy = (B[1] - A[1]) / L, vx = -uy, vy = ux;
+  let mn = Infinity, mx = -Infinity, pmn, pmx;
+  for (const p of h) { const s = (p[0] - A[0]) * vx + (p[1] - A[1]) * vy; if (s < mn) { mn = s; pmn = p; } if (s > mx) { mx = s; pmx = p; } }
+  const W = mx - mn;
+  const t1 = ((pmn[0] - A[0]) * ux + (pmn[1] - A[1]) * uy) / L, t2 = ((pmx[0] - A[0]) * ux + (pmx[1] - A[1]) * uy) / L;
+  let near = 0;
+  for (const q of points) { const p = [q.x, q.y]; let d = Infinity; for (let i = 0; i < h.length && d >= .6; i++) d = Math.min(d, segDist(p, h[i], h[(i + 1) % h.length])); if (d < .6) near++; }
+  return { L, W, area, fill: area / (L * W), t1, t2, edge: near / points.length };
+}
+function judgeRhombus(r, target, TOL = .8) {
+  const big = Math.max(...target), small = Math.min(...target);
+  const lenOK = Math.abs(r.L - big) <= TOL && Math.abs(r.W - small) <= TOL;
+  const shapeOK = r.fill > .36 && r.fill < .68 && r.t1 > .2 && r.t1 < .8 && r.t2 > .2 && r.t2 < .8 && r.edge >= .55;
+  return { ok: lenOK && shapeOK, lenOK, shapeOK };
+}
+// ---- GEOM-END ----
+
+/* =====================================================================
+   게임 진행
+   ===================================================================== */
+const S = { name: "", session: "", startedAt: 0, qi: 0, vi: 0, wrong: 0, hintOn: false, acorns: 0, sqX: START_X, camX: 0, viewW: 1000, scale: 1,
+  muted: false, phase: "idle", sel: null, pad: null, tries: QUESTS.map(() => 0), wrongs: QUESTS.map(() => 0), hinted: QUESTS.map(() => false),
+  wrongLog: [], qStart: QUESTS.map(() => 0), qTime: QUESTS.map(() => null), done: QUESTS.map(() => false) };
+const S0 = JSON.stringify(S);
+const card = () => $("#qcard");
+
+function layout() {
+  const W = innerWidth, H = innerHeight, s = Math.min(H / DH, W / 560);
+  S.scale = s; S.viewW = W / s;
+  const st = $("#stage"); st.style.transform = `scale(${s})`; st.style.top = (H - DH * s) + "px"; st.style.width = S.viewW + "px";
+  updateCam(); if (S.pad) S.pad.resize();
+}
+function updateCam() {
+  S.camX = Math.max(0, Math.min(WORLD_W - S.viewW, S.sqX - S.viewW * .38));
+  $("#farL").style.transform = `translateX(${-S.camX * .15}px)`;
+  $("#midL").style.transform = `translateX(${-S.camX * .45}px)`;
+  $("#groundL").style.transform = `translateX(${-S.camX}px)`;
+}
+function placeSq() { const el = $("#sq"); el.style.left = S.sqX + "px"; el.style.top = pathY(S.sqX) + "px"; }
+
+function walkTo(x, done) {
+  const from = S.sqX, dist = Math.abs(x - from), dur = Math.max(400, dist / CONFIG.WALK_SPEED * 1000), el = $("#sq");
+  el.classList.add("walking"); el.classList.toggle("flip", x < from);
+  const t0 = performance.now(); let lastDust = 0;
+  (function f(t) {
+    const k = Math.min(1, (t - t0) / dur), e = k < .12 ? k * k / .24 : k > .88 ? 1 - (1 - k) * (1 - k) / .24 : k; // 부드럽게 출발·도착
+    S.sqX = from + (x - from) * Math.min(1, Math.max(0, e)); placeSq(); updateCam();
+    if (t - lastDust > 260 && k < .95) { lastDust = t; dust(); }
+    if (k < 1) requestAnimationFrame(f); else { el.classList.remove("walking"); done && done(); }
+  })(t0);
+}
+function dust() { const d = document.createElement("div"); d.className = "dust"; d.style.left = (S.sqX - 22) + "px"; d.style.top = (pathY(S.sqX) - 10) + "px"; $("#groundL").appendChild(d); setTimeout(() => d.remove(), 800); }
+function jump() { const el = $("#sq"); el.classList.remove("jump"); void el.offsetWidth; el.classList.add("jump"); }
+
+function updateHUD(bump) {
+  $("#acCount").textContent = S.acorns;
+  $("#steps").innerHTML = QUESTS.map((_, i) => `<i class="${i < S.acorns ? "done" : i === S.acorns ? "now" : ""}"${i < S.acorns ? ` style="background:${NUTRIENTS[i].color}"` : ""}></i>`).join("");
+  if (bump) { const p = $("#acPill"); p.classList.remove("bump"); void p.offsetWidth; p.classList.add("bump"); }
+}
+
+function startGame() {
+  const name = $("#nameInput").value.trim();
+  if (!name) { $("#nameErr").textContent = "감자의 이름(내 이름)을 꼭 적어 주세요!"; $("#nameInput").focus(); return; }
+  ac();
+  S.started = true;
+  S.name = name; S.session = Date.now().toString(36) + Math.random().toString(36).slice(2, 6); S.startedAt = Date.now();
+  record({ event: "start" });
+  clearInterval(S.hb); S.hb = setInterval(() => record({ event: "ping" }), CONFIG.PING_MS);
+  $("#nametag").textContent = name;
+  $("#hudName").textContent = "🥔 " + name;
+  $("#startOverlay").classList.remove("show");
+  $("#hud").hidden = false; updateHUD();
+  setTimeout(() => walkTo(STATIONS[0], () => arrive(0)), 300);
+}
+
+function arrive(i) {
+  const st = $("#st" + i); st.classList.remove("pop"); void st.offsetWidth; st.classList.add("pop");
+  setTimeout(() => { SFX.chime(); openQuest(i); }, 450);
+}
+
+function openQuest(i) {
+  S.qi = i; S.vi = 0; S.wrong = 0; S.hintOn = false; S.qStart[i] = Date.now();
+  record({ event: "quest", quest: i + 1 });
+  const ov = $("#questOverlay"); ov.classList.remove("result"); ov.classList.add("show");
+  renderQuest();
+  animateCard("pop");
+}
+function animateCard(c) { const el = card(); el.classList.remove("pop", "flip", "shake"); void el.offsetWidth; el.classList.add(c); }
+function nextVersion() { const n = QUESTS[S.qi].versions.length; if (n > 1) S.vi = (S.vi + 1) % n; }
+function chancesHTML() {
+  const left = Math.max(0, CONFIG.RETRIES - S.wrong);
+  let h = '<span>남은 기회</span>'; for (let i = 0; i < CONFIG.RETRIES; i++) h += `<i class="${i < left ? "on" : ""}"></i>`; return h;
+}
+function say(msg, cls = "bad") { const fb = $("#fb"); if (fb) { fb.className = "feedback " + cls; fb.innerHTML = msg; } }
+
+function renderQuest(notice) {
+  const Q = QUESTS[S.qi], v = Q.versions[S.vi];
+  const q = val(Q, v, "q"), fig = val(Q, v, "fig"), hint = val(Q, v, "hint");
+  let ans = "";
+  S.pad = null; S.sel = null;
+  if (Q.type === "choice") {
+    const ch = val(Q, v, "choices"), order = shuffle(ch.map((_, i) => i));
+    ans = `<div class="choices${Q.pics ? " pics" : ""}">${order.map((i, n) => `<button class="choice" data-i="${i}"><span class="cnum">${"①②③④⑤⑥"[n]}</span><span class="ctext">${typeof ch[i] === "string" ? ch[i] : ch[i].html}</span></button>`).join("")}</div>`;
+  } else if (Q.type === "number") {
+    ans = `<div class="ans"><input id="ansInput" inputmode="decimal" autocomplete="off" placeholder="?"><span class="unit">${val(Q, v, "unit")}</span></div>`;
+  } else ans = `<div id="padHost" class="pad"></div>`;
+  card().innerHTML = `
+    <div class="qhead"><span class="qbadge">퀘스트 ${S.qi + 1}</span><span class="qtitle">${Q.title}</span><span class="chances">${chancesHTML()}</span></div>
+    <div class="qbody">
+      ${notice ? `<div class="notice">${notice}</div>` : ""}
+      <div class="qtext">${q}</div>
+      ${fig ? `<div class="fig">${fig}</div>` : ""}
+      ${ans}
+      <div class="hint ${S.hintOn ? "show" : ""}"><b>💡 힌트</b><div>${hint}</div></div>
+      <div class="feedback" id="fb" aria-live="polite"></div>
+    </div>
+    <div class="qfoot"><button class="btn" id="submitBtn">정답 확인</button></div>`;
+  card().querySelector(".qbody").scrollTop = 0;
+  card().querySelectorAll(".choice").forEach(b => b.addEventListener("click", () => {
+    S.sel = Number(b.dataset.i); card().querySelectorAll(".choice").forEach(c => c.classList.toggle("sel", c === b)); say("", "");
+  }));
+  const inp = $("#ansInput"); if (inp) { inp.addEventListener("keydown", e => { if (e.key === "Enter") submit(); }); inp.addEventListener("input", () => say("", "")); }
+  if (Q.type === "draw") { const [c, r] = Q.grid || [12, 10]; S.pad = DrawPad($("#padHost"), c, r); S.pad.onchange = () => say("", ""); }
+  $("#submitBtn").addEventListener("click", submit);
+  S.phase = "question";
+}
+
+function submit() {
+  if (S.phase !== "question") return;
+  const Q = QUESTS[S.qi], v = Q.versions[S.vi];
+  let correct = false, given = "", extra = "";
+  if (Q.type === "choice") {
+    if (S.sel === null) return say("답을 하나 골라 주세요!", "info");
+    { const c = val(Q, v, "choices")[S.sel]; given = typeof c === "string" ? plain(c) : c.text; } correct = S.sel === val(Q, v, "answer");
+  } else if (Q.type === "number") {
+    const raw = $("#ansInput").value.trim().replace(/,/g, "").replace(/\s/g, "");
+    if (!raw) return say("답을 적어 주세요!", "info");
+    const n = Number(raw); if (!isFinite(n)) return say("숫자만 적어 주세요! (단위는 쓰지 않아도 돼요)", "info");
+    given = `${raw} ${val(Q, v, "unit") || ""}`.trim(); correct = Math.abs(n - val(Q, v, "answer")) < 1e-6;
+  } else {
+    const r = analyzeRhombus(S.pad.points());
+    if (r.empty) return say("먼저 모눈종이에 마름모를 그려 주세요!", "info");
+    const j = judgeRhombus(r, val(Q, v, "target"));
+    correct = j.ok;
+    given = `그림: 대각선 약 ${half(r.L)}cm, ${half(r.W)}cm (넓이 약 ${half(r.L * r.W / 2)}cm²)${j.shapeOK ? "" : " / 모양 다름"}`;
+    if (!correct) extra = j.shapeOK ? `내가 그린 마름모의 대각선은 약 <b>${half(r.L)} cm</b>와 <b>${half(r.W)} cm</b>예요.`
+      : "마름모 모양이 조금 달라요. 꼭짓점 4개를 이어 닫힌 마름모를 그리고, 두 대각선이 가운데에서 직각으로 만나게 해 봐요.";
+  }
+  S.tries[S.qi]++;
+  const qsec = Math.round((Date.now() - S.qStart[S.qi]) / 1000);
+  if (correct) { S.done[S.qi] = true; S.qTime[S.qi] = qsec; }
+  const brief = briefOf(Q, v), correctText = correctOf(Q, v);
+  if (!correct) { S.wrongs[S.qi]++; S.wrongLog.push({ quest: S.qi + 1, version: S.vi + 1, brief, answer: given, correct: correctText }); }
+  record({ event: "answer", quest: S.qi + 1, version: S.vi + 1, question: brief, answer: given, correctAnswer: correctText, correct, try: S.tries[S.qi], hint: S.hintOn, questTime: qsec });
+  correct ? onCorrect() : onWrong(extra);
+}
+
+function onWrong(extra) {
+  S.wrong++; SFX.wrong(); animateCard("shake");
+  const pre = extra ? extra + "<br>" : "";
+  if (S.wrong <= CONFIG.RETRIES) {
+    // 틀리면 바로 힌트를 보여 주고, 한 번 더 도전할 수 있어요
+    S.hintOn = true; S.hinted[S.qi] = true;
+    const h = card().querySelector(".hint");
+    if (h) { h.classList.add("show"); h.classList.remove("flash"); void h.offsetWidth; h.classList.add("flash"); setTimeout(() => h.scrollIntoView({ behavior: "smooth", block: "nearest" }), 120); }
+    const left = CONFIG.RETRIES - S.wrong;
+    say(`${pre}아쉬워요! 위의 <b>💡 힌트</b>를 보고 다시 도전해 봐요. (다시 풀기 기회 ${left}번 남았어요)`);
+    const ch = card().querySelector(".chances"); if (ch) ch.innerHTML = chancesHTML();
+    if (S.sel !== null) { const b = card().querySelector(`.choice[data-i="${S.sel}"]`); if (b) b.classList.replace("sel", "bad"); S.sel = null; }
+    const inp = $("#ansInput"); if (inp) { inp.focus(); inp.select(); }
+  } else {
+    S.phase = "reveal";
+    setTimeout(renderReveal, 900);
+    say(`${pre}괜찮아요! 같이 풀어 봐요.`);
+  }
+}
+
+function renderReveal() {
+  const Q = QUESTS[S.qi], v = Q.versions[S.vi];
+  card().innerHTML = `
+    <div class="qhead calm"><span class="qbadge">퀘스트 ${S.qi + 1}</span><span class="qtitle">같이 풀어 봐요</span></div>
+    <div class="qbody">
+      <p>괜찮아요! 틀리면서 배우는 거예요. 이 문제를 어떻게 푸는지 같이 보고, <b>숫자를 바꾼 새 문제</b>에 다시 도전해요.</p>
+      <div class="qtext" style="font-size:15px;color:#6b5444">${val(Q, v, "q")}</div>
+      <div class="solution"><h3>📘 풀이</h3>${val(Q, v, "solution")}</div>
+    </div>
+    <div class="qfoot"><button class="btn orange" id="retryBtn">새 문제로 다시 도전!</button></div>`;
+  animateCard("flip");
+  $("#retryBtn").addEventListener("click", () => {
+    S.wrong = 0; S.hintOn = false; nextVersion(); animateCard("flip");
+    setTimeout(() => renderQuest("🔄 숫자를 바꾼 <b>새 문제</b>예요. 방금 본 풀이를 떠올리며 도전해 봐요!"), 260);
+  });
+}
+
+const PRAISE = ["정답이에요! 최고예요!", "와, 딱 맞았어요!", "정답! 정말 잘했어요!", "멋져요, 정답이에요!", "대단해요! 정답!", "완벽해요! 정답이에요!"];
+function onCorrect() {
+  S.phase = "result"; SFX.correct();
+  const Q = QUESTS[S.qi], v = Q.versions[S.vi], n = NUTRIENTS[S.qi], last = S.qi === QUESTS.length - 1;
+  card().innerHTML = `
+    <div class="qhead good"><span class="qbadge">퀘스트 ${S.qi + 1}</span><span class="qtitle">🎉 ${PRAISE[S.qi % PRAISE.length]}</span></div>
+    <div class="qbody">
+      <div class="praise">${esc(S.name)}, ${n.emoji} ${n.obj} 받을 수 있어요!</div>
+      <div class="tip">💡 ${n.tip}</div>
+      <div class="solution"><h3>📘 풀이</h3>${val(Q, v, "solution")}</div>
+    </div>
+    <div class="qfoot"><button class="btn orange" id="nextBtn">${n.emoji} ${n.name} 받기</button></div>`;
+  $("#questOverlay").classList.remove("result");
+  animateCard("pop");
+  $("#nextBtn").addEventListener("click", () => {
+    $("#nextBtn").disabled = true;
+    $("#questOverlay").classList.remove("show", "result");
+    S.phase = "walk";
+    giveNutrient(() => { if (!last) walkTo(STATIONS[S.qi + 1], () => arrive(S.qi + 1)); else goEnding(); });
+  });
+}
+
+function say(t) {
+  const d = document.createElement("div"); d.className = "say"; d.innerHTML = t;
+  d.style.left = S.sqX + "px"; d.style.top = (pathY(S.sqX) - 208) + "px"; $("#groundL").appendChild(d); setTimeout(() => d.remove(), 3000);
+}
+// 영양분이 하늘에서 떨어져 → 감자가 받고 → 새싹이 한 단계 자라요
+function giveNutrient(cb) {
+  const n = NUTRIENTS[S.qi], gl = $("#groundL"), x = S.sqX, y = pathY(S.sqX) - 150;
+  const a = document.createElement("div"); a.className = "acorn-drop"; a.innerHTML = n.svg; a.style.left = x + "px"; a.style.top = y + "px"; gl.appendChild(a);
+  a.addEventListener("animationend", function h() {
+    a.removeEventListener("animationend", h);
+    SFX.drop(); a.classList.add("collect");
+    S.acorns++; updateHUD(true); setStage(S.acorns >= QUESTS.length ? 6 : S.acorns); jump();
+    const st = $("#st" + S.qi); st.classList.add("done"); st.querySelector(".bubble").textContent = n.emoji;
+    for (let i = 0; i < 10; i++) { const s = document.createElement("div"); s.className = "spark"; const ang = i / 10 * Math.PI * 2; s.style.left = x + "px"; s.style.top = (y + 20) + "px"; s.style.setProperty("--dx", Math.cos(ang) * 60 + "px"); s.style.setProperty("--dy", Math.sin(ang) * 45 + "px"); gl.appendChild(s); setTimeout(() => s.remove(), 900); }
+    say(`${n.emoji} ${n.grow}`);
+    setTimeout(() => a.remove(), 500);
+    setTimeout(cb, 2700);
+  });
+}
+
+function goEnding() {
+  walkTo(NEST_X - 190, () => {
+    record({ event: "complete" });
+    SFX.fanfare(); hearts(); confetti(); jump(); setTimeout(jump, 750);
+    say("꽃이 활짝 피었어요! 🌸");
+    setTimeout(showEnd, 3400);
+  });
+}
+function hearts() {
+  const gl = $("#groundL");
+  for (let i = 0; i < 9; i++) setTimeout(() => {
+    const h = document.createElement("div"); h.className = "heart"; h.textContent = ["💛", "🧡", "💗"][i % 3];
+    h.style.left = (S.sqX - 80 + Math.random() * 200) + "px"; h.style.top = (pathY(S.sqX) - 110) + "px"; h.style.setProperty("--dx", (Math.random() * 60 - 30) + "px");
+    gl.appendChild(h); setTimeout(() => h.remove(), 2300);
+  }, i * 180);
+}
+function confetti() {
+  const cols = ["#ff8fb1", "#ffd54a", "#7fd35b", "#5bb3ff", "#ff9d4d", "#b892ff"];
+  for (let i = 0; i < 80; i++) {
+    const c = document.createElement("div"); c.className = "confetti";
+    c.style.left = Math.random() * 100 + "vw"; c.style.background = cols[i % cols.length];
+    c.style.setProperty("--dx", (Math.random() * 160 - 80) + "px"); c.style.setProperty("--r", (Math.random() * 900 - 450) + "deg");
+    c.style.animationDuration = (2.2 + Math.random() * 2) + "s"; c.style.animationDelay = Math.random() * .6 + "s";
+    document.body.appendChild(c); setTimeout(() => c.remove(), 5000);
+  }
+}
+function restartGame() {
+  clearInterval(S.hb); const muted = S.muted;
+  Object.assign(S, JSON.parse(S0), { muted });
+  document.querySelectorAll(".confetti,.heart").forEach(e => e.remove());
+  buildScene(); placeSq(); layout(); updateHUD();
+  ["#endOverlay", "#questOverlay"].forEach(id => $(id).classList.remove("show"));
+  $("#hud").hidden = true; $("#nameInput").value = ""; $("#startOverlay").classList.add("show");
+}
+function showEnd() {
+  const m = summary();
+  $("#endCard").innerHTML = `
+    <div style="font-size:40px">🥔🌸</div>
+    <h2>꽃이 활짝 피었어요!</h2>
+    <p><b>${esc(S.name)}</b>, 퀘스트 ${QUESTS.length}개를 모두 풀고<br>영양분 ${QUESTS.length}가지를 받아 새싹을 꽃이 필 때까지 키웠어요!</p>
+    <div class="end-nut">${NUTRIENTS.map(n => `<span title="${n.name}">${n.svg}</span>`).join("")}</div>
+    <div class="end-stats"><div><b>${m.totalTime}</b><span>걸린 시간</span></div><div><b>${m.totalWrong}번</b><span>틀린 횟수</span></div></div>
+    <div class="end-note">${m.wrongQuests === "없음" ? "한 번도 틀리지 않았어요! 👏" : "틀렸던 문제: " + esc(m.wrongQuests)}<br>${CONFIG.SHEET_URL ? "풀이 기록이 선생님께 전송되었어요." : "풀이 기록이 저장되었어요."}</div>
+    <button class="btn orange" id="againBtn">처음부터 다시 하기</button>`;
+  $("#endOverlay").classList.add("show");
+  $("#againBtn").addEventListener("click", restartGame);
+}
+
+/* =====================================================================
+   선생님 화면
+   ===================================================================== */
+let teacherOK = false;
+function openTeacherLocal() {
+  const ov = $("#teacherOverlay"), c = $("#tCard"); ov.classList.add("show");
+  if (!teacherOK) {
+    c.innerHTML = `<h2>선생님 화면</h2><p>비밀번호를 입력해 주세요.</p>
+      <div class="row"><input id="pinInput" type="password" inputmode="numeric"><button class="btn small" id="pinBtn">확인</button><button class="btn small gray" id="tClose">닫기</button></div><div class="err" id="pinErr"></div>`;
+    const go = () => { if ($("#pinInput").value === CONFIG.TEACHER_PIN) { teacherOK = true; openTeacherLocal(); } else $("#pinErr").textContent = "비밀번호가 달라요."; };
+    $("#pinBtn").onclick = go; $("#pinInput").onkeydown = e => { if (e.key === "Enter") go(); }; $("#tClose").onclick = () => ov.classList.remove("show");
+    setTimeout(() => $("#pinInput").focus(), 50); return;
+  }
+  let rows = []; try { rows = JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch (e) { }
+  const sess = {};
+  rows.forEach(r => { const s = sess[r.sessionId] = sess[r.sessionId] || { name: r.name, start: r.time }; if (r.summary) s.sum = r.summary; });
+  const t = iso => new Date(iso).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const cls = p => p.startsWith("O") ? "o" : p.startsWith("X") ? "x" : "";
+  const sum = Object.values(sess).reverse().map(s => {
+    const m = s.sum || { perQuest: [], perTime: [] };
+    const per = QUESTS.map((_, i) => { const p = m.perQuest[i] || "-"; return `<td class="${cls(p)}">${esc(p)}${m.perTime[i] ? `<br><small>${m.perTime[i]}</small>` : ""}</td>`; }).join("");
+    return `<tr><td>${esc(s.name)}</td><td>${t(s.start)}</td><td class="${m.achieved === "달성" ? "o" : "x"}">${esc(m.achieved || "")}</td>${per}<td>${esc(m.wrongQuests || "")}</td><td class="wr">${(m.wrongDetail || []).map(esc).join("<br>")}</td><td>${esc(m.totalTime || "")}</td></tr>`;
+  }).join("");
+  const ans = rows.filter(r => r.event === "answer").reverse();
+  const det = ans.slice(0, 300).map(r => `<tr><td>${t(r.time)}</td><td>${esc(r.name)}</td><td>${r.quest}-${r.version}</td><td class="wr">${esc(r.question)}</td><td>${esc(r.answer)}</td><td>${esc(r.correctAnswer || "")}</td><td class="${r.correct ? "o" : "x"}">${r.correct ? "O" : "X"}</td><td>${r.try}</td><td>${r.hint ? "예" : ""}</td><td>${fmtT(r.questTime)}</td></tr>`).join("");
+  const wrongRows = ans.filter(r => !r.correct).slice(0, 300).map(r => `<tr><td>${t(r.time)}</td><td>${esc(r.name)}</td><td>${r.quest}번 (문제 ${r.version})</td><td class="wr">${esc(r.question)}</td><td class="x">${esc(r.answer)}</td><td class="o">${esc(r.correctAnswer || "")}</td></tr>`).join("");
+  c.innerHTML = `<h2>선생님 화면 · 풀이 기록</h2>
+    <div class="t-note">${CONFIG.SHEET_URL ? "모든 학생의 기록은 <b>구글 시트</b>에 모여요. 아래 표는 <b>이 기기</b>에서 푼 기록만 보여 줘요." : "⚠️ 아직 구글 시트가 연결되지 않아서 <b>이 기기</b>에서 푼 기록만 볼 수 있어요. README의 ‘기록 모으기’를 따라 연결해 주세요."}</div>
+    <div class="row">${CONFIG.SHEET_VIEW_URL ? `<a class="btn small" href="${esc(CONFIG.SHEET_VIEW_URL)}" target="_blank" rel="noopener" style="text-decoration:none">구글 시트 열기</a>` : ""}
+      <button class="btn small gray" id="clrBtn">이 기기 기록 지우기</button><button class="btn small gray" id="tClose">닫기</button></div>
+    <h3>학생별 요약</h3>
+    <div style="overflow-x:auto"><table><tr><th>이름</th><th>시작</th><th>최종 퀘스트 달성</th>${QUESTS.map((_, i) => `<th>${i + 1}번<br><small>정답 · 걸린 시간</small></th>`).join("")}<th>오답 발생 문항</th><th>틀린 문제 · 고른 오답 · 정답</th><th>총 시간</th></tr>${sum || `<tr><td colspan="${QUESTS.length + 6}">아직 기록이 없어요.</td></tr>`}</table></div>
+    <h3 style="margin-top:16px">오답 노트 <small>(어떤 문제를 틀렸고, 학생이 어떤 답을 골랐는지)</small></h3>
+    <div style="overflow-x:auto"><table><tr><th>시각</th><th>이름</th><th>틀린 문제</th><th>문제 내용</th><th>학생이 고른 오답</th><th>정답</th></tr>${wrongRows || `<tr><td colspan="6">틀린 문제가 없어요.</td></tr>`}</table></div>
+    <h3 style="margin-top:16px">제출 기록 (최근 순)</h3>
+    <div style="overflow-x:auto"><table><tr><th>시각</th><th>이름</th><th>퀘스트-문제</th><th>문제 내용</th><th>제출한 답</th><th>정답</th><th>맞음</th><th>시도</th><th>힌트 본 뒤</th><th>그 문제에 쓴 시간</th></tr>${det}</table></div>`;
+  $("#tClose").onclick = () => ov.classList.remove("show");
+  $("#clrBtn").onclick = () => { if (confirm("이 기기에 저장된 기록을 모두 지울까요? (구글 시트 기록은 지워지지 않아요)")) { localStorage.removeItem(LS_KEY); openTeacherLocal(); } };
+}
+
+/* ---------- 실시간 선생님 화면 (구글 시트 연결 시) ---------- */
+let tPin = "", tTimer = null, tData = null, tSort = "start", tOpen = {};
+function stopLive() { clearInterval(tTimer); tTimer = null; }
+function openTeacher() {
+  if (!CONFIG.SHEET_URL) return openTeacherLocal();
+  const ov = $("#teacherOverlay"), c = $("#tCard"); ov.classList.add("show");
+  if (tPin) return startLive();
+  c.innerHTML = `<h2>선생님 화면</h2><p>숫자 4자리 비밀번호를 입력해 주세요.</p>
+    <div class="row"><input id="pinInput" type="password" inputmode="numeric" maxlength="4" autocomplete="off"><button class="btn small" id="pinBtn">확인</button><button class="btn small gray" id="tClose">닫기</button></div><div class="err" id="pinErr"></div>`;
+  const go = async () => {
+    const v = $("#pinInput").value.trim(); if (!/^\d{4}$/.test(v)) { $("#pinErr").textContent = "숫자 4자리를 입력해 주세요."; return; }
+    $("#pinErr").textContent = "확인 중…";
+    const r = await fetchDash(v);
+    if (r.ok) { tPin = v; tData = r; startLive(); }
+    else $("#pinErr").textContent = r.error === "pin" ? `비밀번호가 달라요. (남은 기회 ${r.left}번)` : r.error === "locked" ? "너무 많이 틀렸어요. 5분 뒤에 다시 해 주세요." : "서버에 연결하지 못했어요. 인터넷과 SHEET_URL을 확인해 주세요.";
+  };
+  $("#pinBtn").onclick = go; $("#pinInput").onkeydown = e => { if (e.key === "Enter") go(); }; $("#tClose").onclick = () => ov.classList.remove("show");
+  setTimeout(() => $("#pinInput").focus(), 50);
+}
+async function fetchDash(pin) {
+  try {
+    const r = await fetch(`${CONFIG.SHEET_URL}?action=dashboard&pin=${encodeURIComponent(pin)}&_=${Date.now()}`, { cache: "no-store" });
+    return await r.json();
+  } catch (e) { return { ok: false, error: "network" }; }
+}
+function startLive() {
+  stopLive(); renderLive();
+  const tick = async () => {
+    if (!$("#teacherOverlay").classList.contains("show")) return stopLive();
+    const r = await fetchDash(tPin);
+    if (r.ok) { tData = r; tData.err = ""; }
+    else if (r.error === "pin" || r.error === "locked") { tPin = ""; stopLive(); return openTeacher(); }
+    else if (tData) tData.err = "연결이 잠깐 끊겼어요. 다시 시도하는 중…";
+    renderLive();
+  };
+  tick(); tTimer = setInterval(tick, CONFIG.POLL_MS);
+}
+function renderLive() {
+  const c = $("#tCard"), d = tData || { students: [], now: Date.now() };
+  const STALE = 3 * CONFIG.PING_MS + 30000;
+  const list = (d.students || []).map(s => {
+    const age = d.now - s.last, fin = !!s.finished;
+    const st = fin ? "done" : age > STALE ? "stale" : "live";
+    const el = Math.max(0, Math.round(((fin ? s.last : d.now) - s.startedAt) / 1000));
+    return Object.assign({}, s, { st, age, el, nWrong: s.totalWrong || 0 });
+  });
+  const by = { start: (a, b) => a.startedAt - b.startedAt, wrong: (a, b) => b.nWrong - a.nWrong, slow: (a, b) => a.nutrients - b.nutrients || a.startedAt - b.startedAt, name: (a, b) => a.name.localeCompare(b.name, "ko") };
+  list.sort(by[tSort]);
+  const cnt = k => list.filter(x => x.st === k).length;
+  const stTxt = { live: "🟢 푸는 중", done: "🌸 완주!", stale: "⚪ 신호 없음" };
+  const bar = s => `<div class="pbar">${QUESTS.map((_, i) => `<i class="${s.doneArr && s.doneArr[i] ? "d" : s.current === i + 1 && s.st !== "done" ? "c" : ""}${s.wrongsArr && s.wrongsArr[i] ? " w" : ""}" title="${i + 1}번${s.wrongsArr && s.wrongsArr[i] ? " · 오답 " + s.wrongsArr[i] + "회" : ""}"></i>`).join("")}</div>`;
+  const rows = list.map(s => {
+    const wq = (s.wrongsArr || []).map((w, i) => w ? `${i + 1}번(${w}회)` : "").filter(Boolean).join(", ") || "-";
+    const open = tOpen[s.sessionId];
+    return `<tr class="${s.st}" data-sid="${esc(s.sessionId)}" style="cursor:pointer"><td><b>${esc(s.name)}</b></td><td>${bar(s)}<small>${s.nutrients}/${QUESTS.length} 완료</small></td><td>${s.st === "done" ? "-" : (s.current || 1) + "번"}</td><td>${stTxt[s.st]}${s.st === "stale" ? `<br><small>${fmtT(Math.round(s.age / 1000))} 전</small>` : ""}</td><td class="${s.nWrong ? "x" : "o"}">${s.nWrong}회</td><td>${esc(wq)}</td><td>${fmtT(s.el)}</td></tr>` +
+      (open ? `<tr class="detail"><td colspan="7"><div class="wr">${(s.wrongDetail || []).length ? s.wrongDetail.map(esc).join("<br>") : "틀린 문제가 없어요 👍"}</div><small>${(s.perQuest || []).map((p, i) => `${i + 1}번 ${esc(p)}${s.perTime && s.perTime[i] ? " · " + esc(s.perTime[i]) : ""}`).join(" / ")}</small></td></tr>` : "");
+  }).join("");
+  c.innerHTML = `<h2>선생님 화면 · 실시간 진행 <small style="font-size:13px">(${CONFIG.POLL_MS / 1000}초마다 자동 갱신)</small></h2>
+    <div class="t-note">${d.err ? "⚠️ " + esc(d.err) : `마지막 갱신 ${new Date(d.now).toLocaleTimeString("ko-KR")} · 이름을 누르면 틀린 문제와 고른 답이 펼쳐져요. · 기록은 마지막 활동 후 3시간 동안만 보관돼요.`}</div>
+    <div class="row"><span class="chip">👥 전체 ${list.length}</span><span class="chip">🟢 푸는 중 ${cnt("live")}</span><span class="chip">🌸 완주 ${cnt("done")}</span><span class="chip">⚪ 신호 없음 ${cnt("stale")}</span>
+      <select id="tSort"><option value="start">시작 순</option><option value="wrong">오답 많은 순</option><option value="slow">진행 느린 순</option><option value="name">이름 순</option></select>
+      ${CONFIG.SHEET_VIEW_URL ? `<a class="btn small" href="${esc(CONFIG.SHEET_VIEW_URL)}" target="_blank" rel="noopener" style="text-decoration:none">구글 시트 열기</a>` : ""}
+      <button class="btn small gray" id="tLock">🔒 잠그고 닫기</button></div>
+    <div style="overflow-x:auto"><table><tr><th>이름</th><th>진행 (1~${QUESTS.length}번)</th><th>지금 푸는 문제</th><th>상태</th><th>오답</th><th>틀린 문항</th><th>경과 시간</th></tr>${rows || `<tr><td colspan="7">아직 시작한 학생이 없어요.</td></tr>`}</table></div>`;
+  $("#tSort").value = tSort; $("#tSort").onchange = e => { tSort = e.target.value; renderLive(); };
+  c.querySelectorAll("tr[data-sid]").forEach(tr => tr.onclick = () => { tOpen[tr.dataset.sid] = !tOpen[tr.dataset.sid]; renderLive(); });
+  $("#tLock").onclick = () => { stopLive(); tPin = ""; tData = null; $("#teacherOverlay").classList.remove("show"); };
+}
+function downloadCSV(rows) {
+  const head = ["시각", "이름", "세션", "이벤트", "퀘스트", "문제버전", "문제 내용", "제출한 답", "정답", "정답여부", "시도", "힌트 본 뒤 제출", "그 문제에 쓴 시간(초)", "전체 걸린시간(초)", "최종 퀘스트 달성", "오답 발생 문항", "틀린 문제·고른 오답·정답", ...QUESTS.map((_, i) => `${i + 1}번 정답`), ...QUESTS.map((_, i) => `${i + 1}번 시간`)];
+  const q = s => `"${String(s ?? "").replace(/"/g, '""')}"`;
+  const lines = rows.map(r => { const m = r.summary || { perQuest: [], perTime: [] }; return [r.time, r.name, r.sessionId, r.event, r.quest, r.version, r.question, r.answer, r.correctAnswer, r.correct === undefined ? "" : (r.correct ? "O" : "X"), r.try, r.hint ? "예" : "", r.questTime, r.elapsed, m.achieved, m.wrongQuests, (m.wrongDetail || []).join(" / "), ...QUESTS.map((_, i) => m.perQuest[i]), ...QUESTS.map((_, i) => m.perTime[i])].map(q).join(","); });
+  const blob = new Blob(["﻿" + [head.join(","), ...lines].join("\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "감자새싹_마름모_기록.csv"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/* =====================================================================
+   시작
+   ===================================================================== */
+buildScene();
+$("#hero").innerHTML = potatoSVG("h"); setStage(3, $("#hero"));
+$("#hudAcorn").innerHTML = SPROUT_ICON;
+placeSq(); layout();
+addEventListener("resize", layout);
+$("#startBtn").addEventListener("click", startGame);
+$("#nameInput").addEventListener("keydown", e => { if (e.key === "Enter") startGame(); });
+$("#nameInput").addEventListener("input", () => $("#nameErr").textContent = "");
+$("#teacherLink").addEventListener("click", openTeacher);
+$("#muteBtn").addEventListener("click", () => { S.muted = !S.muted; $("#muteBtn").textContent = S.muted ? "🔇" : "🔊"; });
+</script>
+</body>
+</html>
